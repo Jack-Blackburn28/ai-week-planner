@@ -151,7 +151,7 @@ Units 2–4.
   approving any; and the mock `Proposal` does not overlap immovable blocks.
 - [x] 2.6 Run `npm run typecheck` and `npm test`; confirm green.
 
-### [ ] 3.0 Week Calendar Surface (left)
+### [x] 3.0 Week Calendar Surface (left)
 
 Renders the dominant Mon–Sun, 6a–10p calendar (config-driven), today highlighted,
 prev/next navigation, immovable blocks, nested meetings, and approved/proposed blocks
@@ -171,22 +171,22 @@ colored by source. Maps to spec Unit 2.
 
 #### 3.0 Tasks
 
-- [ ] 3.1 Create `lib/time.ts` pure helpers that convert a block's start/end minutes to
+- [x] 3.1 Create `lib/time.ts` pure helpers that convert a block's start/end minutes to
   a top offset and height given the config window; add `lib/time.test.ts` (including a
   non-default window case).
-- [ ] 3.2 Build `components/Calendar/Calendar.tsx`: 7 day columns (Mon–Sun of the week
+- [x] 3.2 Build `components/Calendar/Calendar.tsx`: 7 day columns (Mon–Sun of the week
   containing today), hour rows from `lib/config.ts`, day headers with dates, and
   today's column visually highlighted.
-- [ ] 3.3 Add prev/next week navigation controls that shift the displayed week and
+- [x] 3.3 Add prev/next week navigation controls that shift the displayed week and
   update the header dates.
-- [ ] 3.4 Build `components/Calendar/CalendarBlock.tsx`: render title + time range,
+- [x] 3.4 Build `components/Calendar/CalendarBlock.tsx`: render title + time range,
   position/size via `lib/time.ts`, color by `source`, solid fill for `approved` and
   dashed + faded for `proposed`.
-- [ ] 3.5 Render meetings nested visually inside their parent work block (using
+- [x] 3.5 Render meetings nested visually inside their parent work block (using
   `parentId`), contained within the work-hours block.
-- [ ] 3.6 Wire the calendar to the mock blocks from `lib/mock-data.ts` via
+- [x] 3.6 Wire the calendar to the mock blocks from `lib/mock-data.ts` via
   `DashboardShell` state.
-- [ ] 3.7 Write `components/Calendar/Calendar.test.tsx` covering block positions, the
+- [x] 3.7 Write `components/Calendar/Calendar.test.tsx` covering block positions, the
   dashed pending style, and config-window rendering.
 
 ### [ ] 4.0 Work + School Todo Dashboard (right)
