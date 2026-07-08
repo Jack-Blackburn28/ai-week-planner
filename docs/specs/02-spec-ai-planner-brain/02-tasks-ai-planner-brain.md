@@ -83,7 +83,7 @@ Build the framework-free planner core the route and tests depend on. Maps to spe
   `lib/planner/mock.test.ts` (valid proposal; conflict phrase → no proposal).
 - [x] 1.8 Run `npm run typecheck` and `npm test`; confirm green.
 
-### [ ] 2.0 Planner API route (`POST /api/plan`, server-only Anthropic + mock)
+### [x] 2.0 Planner API route (`POST /api/plan`, server-only Anthropic + mock)
 
 Add the Route Handler that turns week-state + conversation into a validated response.
 Maps to spec Unit 1 (endpoint).
@@ -104,23 +104,23 @@ Maps to spec Unit 1 (endpoint).
 
 #### 2.0 Tasks
 
-- [ ] 2.1 Create `lib/planner/server.ts`: `runPlanner(request)` — if
+- [x] 2.1 Create `lib/planner/server.ts`: `runPlanner(request)` — if
   `process.env.ANTHROPIC_API_KEY` is set, call Anthropic (`new Anthropic()`,
   `messages.parse` with the zod schema, model from `config`, adaptive thinking) to get
   `{ reply, proposal }`; otherwise call `mockPlanner`. Then map + `validateProposal`
   against the week's immovable blocks and return a `PlannerResponse`. Import the Anthropic
   SDK **only** here.
-- [ ] 2.2 Create `app/api/plan/route.ts`: `POST` handler that parses/validates the JSON
+- [x] 2.2 Create `app/api/plan/route.ts`: `POST` handler that parses/validates the JSON
   body, calls `runPlanner`, and returns `NextResponse.json(response)`; on a bad body
   return a 4xx safe error, on planner failure a 5xx safe error — never leak the key or a
   stack trace.
-- [ ] 2.3 Create `app/api/plan/route.test.ts` with `vi.mock("@anthropic-ai/sdk")`:
+- [x] 2.3 Create `app/api/plan/route.test.ts` with `vi.mock("@anthropic-ai/sdk")`:
   (a) key set + mocked parse → route returns the proposal; (b) mocked AI returns a block
   over work hours → validated out of the response; (c) no key → mock-path proposal;
   (d) malformed body → 4xx safe error.
-- [ ] 2.4 Verify the server-only boundary: confirm no `"use client"` component imports the
+- [x] 2.4 Verify the server-only boundary: confirm no `"use client"` component imports the
   Anthropic SDK (grep) and capture it as a proof artifact.
-- [ ] 2.5 Run `npm run typecheck`, `npm run lint`, `npm test`; confirm green.
+- [x] 2.5 Run `npm run typecheck`, `npm run lint`, `npm test`; confirm green.
 
 ### [ ] 3.0 Chat wired to the planner (UI)
 
