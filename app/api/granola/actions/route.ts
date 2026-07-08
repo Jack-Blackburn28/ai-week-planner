@@ -1,40 +1,30 @@
 /**
  * GET /api/granola/actions — Work todos generated from recent Granola meetings.
- * Resolves the client, reads recent meetings' transcripts, and uses the AI
- * extractor to produce action items mapped to Work `TodoItem`s.
  *
- * NOTE: persistence (generate-once, never-regenerate, minus-completed) is layered
- * on in T3.0 via `lib/granola/store.ts`. This route is the extraction pipeline;
- * it fails soft to `[]` so the UI degrades gracefully.
+ * Runs the persistent sync: each recent meeting is processed once (its transcript
+ * read and action items AI-extracted), items are stored, and the current OPEN items
+ * (excluding anything the user has cleared) are returned as Work `TodoItem`s. An
+ * already-processed meeting is never re-extracted, and cleared items never
+ * regenerate. Fails soft to `[]` so the UI degrades gracefully.
  */
 import { NextResponse } from "next/server";
 import { resolveClient } from "@/lib/granola/client";
 import { extractActionItems } from "@/lib/granola/extract";
-import { buildActionRecords, recordToTodo } from "@/lib/granola/map";
+import { recordToTodo } from "@/lib/granola/map";
+import { granolaStore, syncActions } from "@/lib/granola/store";
+import { completionsStore } from "@/lib/todos/completions";
 import type { TodoItem } from "@/lib/types";
-
-const WINDOW_DAYS = 30;
 
 export async function GET() {
   try {
-    const client = resolveClient();
-    const meetings = await client.listRecentMeetings(WINDOW_DAYS);
-    const now = new Date().toISOString();
-    const todos: TodoItem[] = [];
-
-    for (const meeting of meetings) {
-      try {
-        const transcript = await client.getTranscript(meeting.id);
-        if (!transcript) continue;
-        const items = await extractActionItems(transcript);
-        for (const record of buildActionRecords(meeting, items, now)) {
-          todos.push(recordToTodo(record));
-        }
-      } catch (err) {
-        console.error(`[granola] extraction failed for ${meeting.id}:`, err);
-      }
-    }
-    return NextResponse.json<TodoItem[]>(todos);
+    const open = await syncActions({
+      store: granolaStore,
+      client: resolveClient(),
+      extract: extractActionItems,
+      completedIds: completionsStore.ids(),
+      now: new Date().toISOString(),
+    });
+    return NextResponse.json<TodoItem[]>(open.map(recordToTodo));
   } catch (err) {
     console.error("[granola] failed to build actions:", err);
     return NextResponse.json<TodoItem[]>([]);

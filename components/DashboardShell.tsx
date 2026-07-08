@@ -9,7 +9,7 @@ import {
   useSyncExternalStore,
 } from "react";
 import type { CalendarBlock, ChatMessage, ChatRole, TodoItem } from "@/lib/types";
-import { initialMessages, initialTodos } from "@/lib/mock-data";
+import { initialMessages } from "@/lib/mock-data";
 import { approveProposal, discardProposal } from "@/lib/planning";
 import { toCalendarBlocks } from "@/lib/planner/validate";
 import { toWeekState } from "@/lib/planner/week";
@@ -58,12 +58,11 @@ export function DashboardShell() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [connected, setConnected] = useState<boolean | null>(null);
-  // Work todos stay mock until Granola (Story 5). School todos come from Canvas.
-  const [workTodos, setWorkTodos] = useState<TodoItem[]>(() =>
-    initialTodos.filter((t) => t.section === "work"),
-  );
+  // Work todos come from Granola (AI-generated from transcripts); School from Canvas.
+  const [workTodos, setWorkTodos] = useState<TodoItem[]>([]);
   const [schoolTodos, setSchoolTodos] = useState<TodoItem[]>([]);
   const [canvasConnected, setCanvasConnected] = useState<boolean | null>(null);
+  const [granolaConnected, setGranolaConnected] = useState<boolean | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [chatOpen, setChatOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -80,6 +79,26 @@ export function DashboardShell() {
     [workTodos, schoolTodos],
   );
   const hasProposal = blocks.some((b) => b.status === "proposed");
+
+  // Pull Work action items from Granola (status drives the empty state).
+  const fetchActions = useCallback(async () => {
+    try {
+      const [statusRes, itemsRes] = await Promise.all([
+        fetch("/api/granola/status"),
+        fetch("/api/granola/actions"),
+      ]);
+      if (statusRes.ok) {
+        const s = (await statusRes.json()) as { connected: boolean };
+        setGranolaConnected(Boolean(s.connected));
+      }
+      if (itemsRes.ok) {
+        const items = (await itemsRes.json()) as TodoItem[];
+        setWorkTodos(Array.isArray(items) ? items : []);
+      }
+    } catch {
+      /* leave prior actions */
+    }
+  }, []);
 
   // Pull School assignments from Canvas (status drives the empty state).
   const fetchAssignments = useCallback(async () => {
@@ -137,12 +156,18 @@ export function DashboardShell() {
     };
   }, []);
 
-  // Fetch Canvas assignments once on mount (refreshed via the Refresh button).
+  // Fetch Canvas assignments + Granola actions once on mount (refreshed via Refresh).
   useEffect(() => {
     void (async () => {
       await fetchAssignments();
     })();
   }, [fetchAssignments]);
+
+  useEffect(() => {
+    void (async () => {
+      await fetchActions();
+    })();
+  }, [fetchActions]);
 
   // Fetch events for the displayed week (on mount and whenever the week changes).
   // setState runs only after the fetch resolves, guarded against unmount.
@@ -333,6 +358,7 @@ export function DashboardShell() {
             onRefresh={() => {
               void fetchEvents(weekOffset);
               void fetchAssignments();
+              void fetchActions();
             }}
             loading={googleLoading}
           />
@@ -349,6 +375,22 @@ export function DashboardShell() {
             items={workTodos}
             today={today}
             onToggle={toggleTodo}
+            emptyState={
+              granolaConnected === false ? (
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-hairline bg-surface px-3 py-2 text-sm">
+                  <span className="text-ink-soft">
+                    Connect Granola to generate action items.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSettingsOpen(true)}
+                    className="shrink-0 rounded-md bg-work px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
+                  >
+                    Connect
+                  </button>
+                </div>
+              ) : undefined
+            }
           />
           <TodoSection
             title="School"

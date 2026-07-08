@@ -100,7 +100,7 @@ action items from each transcript with the Anthropic API (mock fallback). (Unit 
 - [x] 2.4 Gates; capture `curl …/actions` JSON; (route completed with persistence in
   T3, but a minimal actions route returning mapped items proves extraction here).
 
-### [ ] 3.0 Persistence — generate-once, never-regenerate, cleared-permanent
+### [x] 3.0 Persistence — generate-once, never-regenerate, cleared-permanent
 
 Persist processed meetings + open items so refreshes don't re-run the AI, and cleared
 items never come back. Wire the Work list to persisted items. (Unit 3.)
@@ -115,15 +115,15 @@ items never come back. Wire the Work list to persisted items. (Unit 3.)
 
 #### 3.0 Tasks
 
-- [ ] 3.1 `lib/granola/store.ts` (gitignored `.granola-store.json`: `processedMeetingIds`
+- [x] 3.1 `lib/granola/store.ts` (gitignored `.granola-store.json`: `processedMeetingIds`
   + open `items`; `syncActions(client, extractor, completedIds)` = fetch new meetings →
   extract → append open items → mark processed → skip processed & completed) +
   `store.test.ts`.
-- [ ] 3.2 `app/api/granola/actions/route.ts` finalize: run `syncActions`, return open
+- [x] 3.2 `app/api/granola/actions/route.ts` finalize: run `syncActions`, return open
   Work `TodoItem`s minus completed ids; fail soft to prior/empty.
-- [ ] 3.3 `DashboardShell`: Work list from `/api/granola/actions` (replaces mock Work);
+- [x] 3.3 `DashboardShell`: Work list from `/api/granola/actions` (replaces mock Work);
   "Connect Granola" empty state when not connected; Work items feed `allTodos`.
-- [ ] 3.4 Gates; screenshot; commit
+- [x] 3.4 Gates; screenshot; commit
   `feat: Granola action-item persistence + Work list (T3.0, Spec 05)`.
 
 ### [ ] 4.0 Combined Active | Completed archive (Work + School)
