@@ -94,7 +94,7 @@ status/disconnect, and ships a reproducible Google Cloud setup guide. Maps to Sp
 - [x] 1.9 Build `components/Settings/GoogleConnect.tsx` (connect/disconnect + live status) and surface it from `DashboardShell` via a ⚙︎ Settings drawer. Client component; no SDK import. Test: `GoogleConnect.test.tsx`.
 - [x] 1.10 Update `.env.example` (Google secret names) and `.gitignore` (`.tokens.json`, `.google-config.json`); write `docs/google-calendar-setup.md` (OAuth client, redirect URI, scopes, **In production** consent screen).
 
-### [ ] 2.0 Calendar mapping + auto-created "AI Calendar" (choose work/personal sources)
+### [x] 2.0 Calendar mapping + auto-created "AI Calendar" (choose work/personal sources)
 
 Lists each connected account's calendars, lets Jack assign them to work / personal /
 ignored, persists the mapping, and ensures a personal **"AI Calendar"** exists (creating
@@ -109,14 +109,14 @@ it if absent) as the write-back target excluded from busy sources. Maps to Spec 
 
 #### 2.0 Tasks
 
-- [ ] 2.1 Define the Calendar API wrapper interface in `lib/google/client.ts`: `listCalendars(account)`, `listEvents(account, calendarId, timeMin, timeMax)`, `insertEvent(calendarId, event)`, `ensureCalendar(name)`. Real impl uses `googleapis` with auto-refresh; token updates persisted back to the token store.
-- [ ] 2.2 Implement `lib/google/client.mock.ts`: in-memory fake honoring the same interface (seeded calendars/events) for tests and no-credential runs.
-- [ ] 2.3 Implement `lib/google/config.ts`: persist mapping (`{ work: calId[], personal: calId[], ignored: calId[], aiCalendarId }`) to gitignored `.google-config.json`; `getBusySourceCalendars()` returns work+personal ids **excluding** `aiCalendarId`.
-- [ ] 2.4 Implement `ensureAiCalendar()` (in `config.ts` or `client.ts`): look up a personal calendar named "AI Calendar"; create it if missing; store its id in config. Idempotent.
-- [ ] 2.5 Write `lib/google/ensureAiCalendar.test.ts` (fake client): first call creates, second reuses the same id; id persisted.
-- [ ] 2.6 Add `app/api/google/calendars/route.ts` (GET list) and `app/api/google/mapping/route.ts` (GET/POST mapping; POST also runs `ensureAiCalendar`).
-- [ ] 2.7 Extend `components/Settings/GoogleConnect.tsx` with the mapping UI (assign each calendar to work/personal/ignored; save to `/api/google/mapping`).
-- [ ] 2.8 Write `lib/google/mapping.test.ts`: mapping persistence round-trip; `getBusySourceCalendars()` excludes the AI Calendar id.
+- [x] 2.1 Defined the client interface in `lib/google/client.ts` (`listCalendars`, `listEvents`, `insertEvent`, `ensureCalendar`) + real `googleapis`-backed impl + `resolveClient()` (real vs demo fake).
+- [x] 2.2 Implemented `lib/google/client.mock.ts` (in-memory fake) + `lib/google/demoSeed.ts` (current-week seeded events for `GOOGLE_MOCK=1`).
+- [x] 2.3 Implemented `lib/google/config.ts`: mapping persisted to gitignored `.google-config.json`; `busySources()` returns work + personal ids **excluding** `aiCalendarId`; `createGoogleConfig` factory for tests.
+- [x] 2.4 Implemented `ensureAiCalendar()` in `config.ts`: finds/creates the personal "AI Calendar", stores its id; idempotent.
+- [x] 2.5 Wrote `lib/google/ensureAiCalendar.test.ts`: create-once/reuse + reuse-existing-by-name.
+- [x] 2.6 Added `app/api/google/calendars` (GET) and `app/api/google/mapping` (GET/POST; POST runs `ensureAiCalendar`).
+- [x] 2.7 Extended `GoogleConnect.tsx` with the mapping UI (per-calendar work/personal/ignore selects + Save).
+- [x] 2.8 Wrote `lib/google/mapping.test.ts`: persistence round-trip; `busySources()` excludes the AI Calendar id.
 
 ### [ ] 3.0 Read & display real events for the displayed week (with navigation + refresh)
 
