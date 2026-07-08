@@ -14,7 +14,10 @@ import { mockExtract } from "./extract.mock";
 import type { ExtractedActionItem, GranolaTranscript } from "./types";
 
 const MODEL = "claude-sonnet-5";
-const MAX_TOKENS = 1024;
+// Generous cap: a busy meeting can yield many action items, and the structured
+// JSON must not be truncated mid-string (that fails parsing → the meeting yields
+// nothing). 1024 was too tight for long transcripts.
+const MAX_TOKENS = 4096;
 
 const extractionSchema = z.object({
   items: z.array(z.object({ title: z.string() })),
