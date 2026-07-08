@@ -53,4 +53,45 @@ describe("validateProposedBlocks (AI output is untrusted)", () => {
     const result = validateProposedBlocks(proposed, [workMon]);
     expect(result.map((b) => b.title)).toEqual(["Good"]);
   });
+
+  it("rejects a proposal overlapping a real (fetched) Google event", () => {
+    // A real work meeting fetched from Google — immovable, like the mock skeleton.
+    const realMeeting: CalendarBlock = {
+      id: "g-standup",
+      title: "Team standup",
+      source: "work",
+      status: "approved",
+      day: 2, // Wed
+      startMinutes: 10 * 60,
+      endMinutes: 10 * 60 + 30,
+      immovable: true,
+      googleEventId: "standup",
+      calendarId: "work-primary",
+    };
+    const proposed = toCalendarBlocks([
+      // 10:15 Wed — squarely inside the real meeting
+      { title: "Focus", source: "personal", day: 2, startMinutes: 615, endMinutes: 675 },
+    ]);
+    expect(validateProposedBlocks(proposed, [realMeeting])).toHaveLength(0);
+  });
+
+  it("allows a proposal overlapping an AI-Calendar event (not busy)", () => {
+    // An AI-written block is NOT immovable, so the AI may re-plan over it.
+    const aiBlock: CalendarBlock = {
+      id: "g-gym",
+      title: "Gym",
+      source: "personal",
+      status: "approved",
+      day: 2,
+      startMinutes: 18 * 60,
+      endMinutes: 19 * 60,
+      immovable: false,
+      googleEventId: "gym",
+      calendarId: "ai-cal",
+    };
+    const proposed = toCalendarBlocks([
+      { title: "Reading", source: "school", day: 2, startMinutes: 1080, endMinutes: 1140 },
+    ]);
+    expect(validateProposedBlocks(proposed, [aiBlock])).toHaveLength(1);
+  });
 });

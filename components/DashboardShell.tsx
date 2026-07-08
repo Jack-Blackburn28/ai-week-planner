@@ -179,9 +179,34 @@ export function DashboardShell() {
     }
   };
 
-  const handleApprove = () => {
-    setBlocks((prev) => approveProposal(prev));
-    pushMessage("assistant", "Done — added to your calendar. ✅");
+  const handleApprove = async () => {
+    const proposed = blocks.filter((b) => b.status === "proposed");
+    // No Google connected → keep the Story 2 local behavior (proposed → approved).
+    if (!connected || proposed.length === 0) {
+      setBlocks((prev) => approveProposal(prev));
+      pushMessage("assistant", "Done — added to your calendar. ✅");
+      return;
+    }
+    // Connected → write the approved blocks to the personal "AI Calendar",
+    // then re-fetch so they render from Google (and are excluded from busy time).
+    try {
+      const res = await fetch("/api/google/commit", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ blocks: proposed, weekOffset }),
+      });
+      if (!res.ok) throw new Error("commit failed");
+      setBlocks((prev) => prev.filter((b) => b.status !== "proposed"));
+      await fetchEvents(weekOffset);
+      pushMessage("assistant", "Done — added to your AI Calendar. ✅");
+    } catch {
+      // Fall back to a local approve so nothing is lost if the write fails.
+      setBlocks((prev) => approveProposal(prev));
+      pushMessage(
+        "assistant",
+        "Added to your calendar (couldn't sync to Google just now).",
+      );
+    }
   };
 
   const handleMakeChanges = () => {

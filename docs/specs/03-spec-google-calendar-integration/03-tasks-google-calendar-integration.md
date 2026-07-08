@@ -143,7 +143,7 @@ local timezone, and degrades gracefully when disconnected. Maps to Spec Unit 3.
 - [x] 3.6 Updated `Calendar.tsx` (controlled week offset, real-date `data-date` headers, expanded window, Refresh button) and added `components/Calendar/AllDayStrip.tsx`.
 - [x] 3.7 Extended `Calendar.test.tsx`: real-date headers; all-day event in the strip not the grid; window auto-expansion. Updated `DashboardShell.test.tsx` for the new mount fetches.
 
-### [ ] 4.0 Write-back to "AI Calendar" + real busy model in the planner
+### [x] 4.0 Write-back to "AI Calendar" + real busy model in the planner
 
 On approval, writes each approved block as a real event to the personal "AI Calendar"
 (recording Google event ids), and extends the planner's free-space/validation so real work
@@ -160,9 +160,9 @@ preserving the tested "never overlap" rule against real data. Maps to Spec Unit 
 
 #### 4.0 Tasks
 
-- [ ] 4.1 Implement `lib/google/busy.ts`: assemble the immovable/busy set = mock class times + fetched work events + fetched personal events, **excluding** any block whose `calendarId` is the AI Calendar. Write `lib/google/busy.test.ts`.
-- [ ] 4.2 Update `lib/planner/week.ts` / `toWeekState` so the week snapshot passed to the planner includes fetched real events as immovable blocks (and excludes AI-Calendar blocks from busy).
-- [ ] 4.3 Extend `lib/planner/validate.ts` so proposals are re-validated against the real busy set; add a `lib/planner/validate.test.ts` case where a proposal overlapping a fetched real event is rejected.
-- [ ] 4.4 Implement `app/api/google/commit/route.ts`: accept approved blocks, `ensureAiCalendar()`, insert each as a timed event on the AI Calendar, return `{ id, googleEventId }[]`. Write `app/api/google/commit.test.ts` with the fake client.
-- [ ] 4.5 Update `components/DashboardShell.tsx` approval handler to POST approved blocks to `/api/google/commit`, then mark them approved with their returned `googleEventId`; keep the existing `approveProposal`/`discardProposal` UX and handle commit failure gracefully.
-- [ ] 4.6 Confirm the full suite is green and the "never overlap real events" + "AI Calendar excluded" rules are covered; run `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`.
+- [x] 4.1 Implemented `lib/google/busy.ts` (`busyBlocks` = immovable blocks; AI-Calendar events are non-immovable via `eventMap`, so excluded). Test: `busy.test.ts`.
+- [x] 4.2 `toWeekState` already includes fetched real events (immovable) and excludes proposed; `DashboardShell` now passes the merged Google + local blocks to the planner, so it plans around real events. (No change needed to `week.ts`.)
+- [x] 4.3 Extended `lib/planner/validate.test.ts`: a proposal overlapping a real fetched event is rejected; one overlapping an AI-Calendar (non-busy) event is allowed. (`validateProposedBlocks`/`overlapsImmovable` already enforce this via the `immovable` flag.)
+- [x] 4.4 Implemented write-back: `lib/google/writeback.ts` (`commitBlocks` — ensures AI Calendar, inserts each block with `source` in extendedProperties) + `app/api/google/commit/route.ts`. Test: `writeback.test.ts` (fake client). _(Logic unit-tested in lib rather than the thin route.)_
+- [x] 4.5 Updated `DashboardShell` approval handler: when connected, POST to `/api/google/commit` then re-fetch (blocks render from the AI Calendar); when disconnected or on failure, fall back to the local `approveProposal` (Story 2 flow preserved). `discardProposal` unchanged.
+- [x] 4.6 Full suite green (104 tests); `lint`, `typecheck`, `test`, `build` all pass.

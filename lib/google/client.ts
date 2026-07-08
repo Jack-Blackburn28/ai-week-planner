@@ -34,6 +34,8 @@ export interface NewEvent {
   summary: string;
   start: { dateTime: string };
   end: { dateTime: string };
+  /** App-private metadata (e.g. the original block `source`) round-tripped on read. */
+  extendedProperties?: { private?: Record<string, string> };
 }
 
 export interface GoogleCalendarClient {
@@ -122,13 +124,21 @@ export function isMockMode(): boolean {
   return process.env.GOOGLE_MOCK === "1";
 }
 
-let mockSingleton: GoogleCalendarClient | null = null;
+/**
+ * The demo fake is cached on `globalThis` so every route handler shares ONE
+ * instance within the process (in dev, route modules are otherwise isolated, so
+ * a plain module-level singleton wouldn't be shared and write-backs wouldn't be
+ * visible on re-read). The real Google backend needs none of this.
+ */
+const mockHolder = globalThis as unknown as {
+  __awpMockClient?: GoogleCalendarClient;
+};
 
 /** Resolve the client the routes should use (real, or the shared demo fake). */
 export function resolveClient(): GoogleCalendarClient {
   if (isMockMode()) {
-    mockSingleton ??= createMockClient(demoSeed());
-    return mockSingleton;
+    mockHolder.__awpMockClient ??= createMockClient(demoSeed());
+    return mockHolder.__awpMockClient;
   }
   return googleCalendarClient;
 }

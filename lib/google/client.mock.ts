@@ -56,7 +56,17 @@ export function createMockClient(seed: Seed = {}): MockClient {
     async insertEvent(calendarId, event) {
       (insertedByCal[calendarId] ??= []).push(event);
       const n = Object.values(insertedByCal).flat().length;
-      return { id: `mock-evt-${n}` };
+      const id = `mock-evt-${n}`;
+      // Make the inserted event queryable via listEvents (round-trip on re-read).
+      events.push({
+        id,
+        summary: event.summary,
+        start: { dateTime: event.start.dateTime },
+        end: { dateTime: event.end.dateTime },
+        calendarId,
+        extendedProperties: event.extendedProperties,
+      });
+      return { id };
     },
 
     async ensureCalendar(name) {
