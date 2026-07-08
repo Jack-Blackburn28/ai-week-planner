@@ -108,7 +108,7 @@ conventions every later story relies on. Maps to spec Unit 1.
 - [x] 1.11 Render a minimal placeholder page and confirm a clean boot (no console
   errors); capture the boot proof artifacts.
 
-### [ ] 2.0 Domain Types, Mock Data & Pure Planning Logic (`lib/`)
+### [x] 2.0 Domain Types, Mock Data & Pure Planning Logic (`lib/`)
 
 Defines the shared types, realistic seed data, and the pure, unit-tested rules the
 surfaces reuse (overlap-with-immovable check, approve, discard). This is the reusable
@@ -127,29 +127,29 @@ Units 2–4.
 
 #### 2.0 Tasks
 
-- [ ] 2.1 Create `lib/config.ts`: `CALENDAR_START_HOUR` (6), `CALENDAR_END_HOUR` (22),
+- [x] 2.1 Create `lib/config.ts`: `CALENDAR_START_HOUR` (6), `CALENDAR_END_HOUR` (22),
   and week-start (Monday) as the single source of truth used everywhere.
-- [ ] 2.2 Create `lib/types.ts`: `CalendarBlock` (`id`, `title`, `source:
+- [x] 2.2 Create `lib/types.ts`: `CalendarBlock` (`id`, `title`, `source:
   'work'|'school'|'personal'`, `status: 'approved'|'proposed'`, `day`, `startMinutes`,
   `endMinutes`, `immovable?: boolean`, `parentId?: string` for nested meetings),
   `TodoItem` (`id`, `section: 'work'|'school'`, `title`, `metaLabel`, `dueDate`,
   `done`), `ChatMessage` (`id`, `role: 'user'|'assistant'`, `text`), and `Proposal`
   (a set of proposed blocks).
-- [ ] 2.3 Create `lib/planning.ts` with pure functions:
+- [x] 2.3 Create `lib/planning.ts` with pure functions:
   `overlapsImmovable(block, blocks)` (true if it would overlap any immovable block on
   the same day), `approveProposal(blocks)` (returns blocks with `proposed` → `approved`),
   and `discardProposal(blocks)` (returns blocks with `proposed` removed). No React/DOM.
-- [ ] 2.4 Create `lib/mock-data.ts`: immovable work-hours blocks (Mon–Fri 9–5), 2–3
+- [x] 2.4 Create `lib/mock-data.ts`: immovable work-hours blocks (Mon–Fri 9–5), 2–3
   meetings nested in the work block (`parentId`), a couple of evening class blocks,
   some approved personal/homework blocks in free space, Work + School todo items each
   with a due date (include at least one overdue and one due-soon), an initial chat
   message or two, and a canned mock `Proposal` whose blocks sit in free space and pass
   `overlapsImmovable === false`.
-- [ ] 2.5 Create `lib/planning.test.ts`: assert `overlapsImmovable` catches an
+- [x] 2.5 Create `lib/planning.test.ts`: assert `overlapsImmovable` catches an
   overlap and allows a free-space block; `approveProposal` converts only proposed
   blocks and preserves the rest; `discardProposal` removes proposed blocks without
   approving any; and the mock `Proposal` does not overlap immovable blocks.
-- [ ] 2.6 Run `npm run typecheck` and `npm test`; confirm green.
+- [x] 2.6 Run `npm run typecheck` and `npm test`; confirm green.
 
 ### [ ] 3.0 Week Calendar Surface (left)
 
