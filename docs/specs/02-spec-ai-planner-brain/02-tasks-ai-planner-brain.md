@@ -41,7 +41,7 @@ Dependency order: **1.0 → 2.0 → 3.0 → 4.0**. 2.0 depends on the `lib/plann
 
 ## Tasks
 
-### [ ] 1.0 Planner core & config (`lib/planner`, framework-free + mock fallback)
+### [x] 1.0 Planner core & config (`lib/planner`, framework-free + mock fallback)
 
 Build the framework-free planner core the route and tests depend on. Maps to spec Unit 1
 (core/mock/validation).
@@ -59,29 +59,29 @@ Build the framework-free planner core the route and tests depend on. Maps to spe
 
 #### 1.0 Tasks
 
-- [ ] 1.1 Install `@anthropic-ai/sdk` and `zod`; add `.env.example` with an empty
+- [x] 1.1 Install `@anthropic-ai/sdk` and `zod`; add `.env.example` with an empty
   `ANTHROPIC_API_KEY=` placeholder (confirm `.env*` is git-ignored).
-- [ ] 1.2 Create `lib/planner/config.ts`: export `PLANNER_MODEL = "claude-sonnet-5"`
+- [x] 1.2 Create `lib/planner/config.ts`: export `PLANNER_MODEL = "claude-sonnet-5"`
   (with a comment noting it's swappable to `claude-opus-4-8`) and any planner constants.
-- [ ] 1.3 Create `lib/planner/types.ts`: `WeekState` (immovable blocks, approved blocks,
+- [x] 1.3 Create `lib/planner/types.ts`: `WeekState` (immovable blocks, approved blocks,
   todos), `PlannerRequest` (`messages: ChatMessage[]`, `week: WeekState`),
   `ProposedBlock` (title, source, day, startMinutes, endMinutes), and `PlannerResponse`
   (`{ reply: string; proposal?: { summary: string; blocks: ProposedBlock[] } }`).
-- [ ] 1.4 Create `lib/planner/schema.ts`: a zod schema mirroring the AI structured output
+- [x] 1.4 Create `lib/planner/schema.ts`: a zod schema mirroring the AI structured output
   (`reply` + optional `proposal`), for `messages.parse` / `output_config.format`.
-- [ ] 1.5 Create `lib/planner/prompt.ts`: pure `buildSystemPrompt()` (encodes the core
+- [x] 1.5 Create `lib/planner/prompt.ts`: pure `buildSystemPrompt()` (encodes the core
   rules: never over immovable, free space only, propose-not-commit, conflict→ask) and
   `serializeWeek(week)` (compact text of immovable + approved blocks and todos+due dates);
   add `lib/planner/prompt.test.ts`.
-- [ ] 1.6 Create `lib/planner/validate.ts`: `toProposedBlocks(proposal)` → `CalendarBlock[]`
+- [x] 1.6 Create `lib/planner/validate.ts`: `toProposedBlocks(proposal)` → `CalendarBlock[]`
   with `status: "proposed"` and generated ids, and `validateProposal(blocks, weekBlocks)`
   that drops any block failing `overlapsImmovable`; add `lib/planner/validate.test.ts`
   (block over work hours is dropped).
-- [ ] 1.7 Create `lib/planner/mock.ts`: deterministic `mockPlanner(request)` returning a
+- [x] 1.7 Create `lib/planner/mock.ts`: deterministic `mockPlanner(request)` returning a
   friendly `reply` + a small free-space `proposal`; when the latest message signals an
   unfittable request, return a clarifying `reply` with **no** proposal. Add
   `lib/planner/mock.test.ts` (valid proposal; conflict phrase → no proposal).
-- [ ] 1.8 Run `npm run typecheck` and `npm test`; confirm green.
+- [x] 1.8 Run `npm run typecheck` and `npm test`; confirm green.
 
 ### [ ] 2.0 Planner API route (`POST /api/plan`, server-only Anthropic + mock)
 
