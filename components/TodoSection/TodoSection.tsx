@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { TodoItem as Item } from "@/lib/types";
 import { TodoItem } from "./TodoItem";
 
@@ -6,9 +7,17 @@ interface TodoSectionProps {
   items: Item[];
   today: Date;
   onToggle: (id: string) => void;
+  /** Shown in place of the default "Nothing here yet." when the list is empty. */
+  emptyState?: ReactNode;
 }
 
-export function TodoSection({ title, items, today, onToggle }: TodoSectionProps) {
+export function TodoSection({
+  title,
+  items,
+  today,
+  onToggle,
+  emptyState,
+}: TodoSectionProps) {
   const openCount = items.filter((i) => !i.done).length;
 
   return (
@@ -23,7 +32,9 @@ export function TodoSection({ title, items, today, onToggle }: TodoSectionProps)
         </span>
       </header>
       {items.length === 0 ? (
-        <p className="px-2 py-2 text-sm text-ink-soft">Nothing here yet.</p>
+        emptyState ?? (
+          <p className="px-2 py-2 text-sm text-ink-soft">Nothing here yet.</p>
+        )
       ) : (
         <ul className="flex flex-col">
           {items.map((item) => (

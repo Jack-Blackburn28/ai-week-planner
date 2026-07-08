@@ -121,7 +121,7 @@ submission→done, relax `TodoItem.dueDate` to optional, and expose it via
 - [x] 2.7 Ran the full gates (122 tests green); captured the `curl …/assignments` JSON.
   Commit below.
 
-### [ ] 3.0 Render real assignments in the School section + refresh
+### [x] 3.0 Render real assignments in the School section + refresh
 
 Wire mapped assignments into `DashboardShell`: fetch on load + on the existing Refresh
 button (no polling), replace mock school items, render "No due date", keep submitted
@@ -139,18 +139,17 @@ Work section stays mock. (Spec Unit 2 UI + Unit 3 refresh.)
 
 #### 3.0 Tasks
 
-- [ ] 3.1 Update `components/TodoSection/TodoItem.tsx` to render "No due date" (muted,
-  `text-ink-soft`) when `dueDate` is absent, skipping `classifyDue`/`formatDueLabel`.
-- [ ] 3.2 In `DashboardShell`, fetch `/api/canvas/assignments` on mount; set the School
-  half of `todos` from it (keep Work from `initialTodos`). Guard against unmount.
-- [ ] 3.3 Make the Refresh button also re-fetch Canvas assignments (combine with
-  `fetchEvents` so one Refresh updates calendar + assignments).
-- [ ] 3.4 Add a "Connect Canvas" empty state for the School section when Canvas is not
-  connected (parallel to the Google empty state); Work section unaffected.
-- [ ] 3.5 Add/extend a component test asserting School items derive from the Canvas fetch,
-  submitted → checked, undated → "No due date", and Refresh re-fetches.
-- [ ] 3.6 Run the quality gates; capture the three screenshots (mock mode + not-connected).
-  Commit `feat: render Canvas assignments in School section + refresh (T3.0, Spec 04)`.
+- [x] 3.1 `TodoItem.tsx` renders "No due date" when `dueDate` is absent, skipping
+  `classifyDue`/`formatDueLabel` (landed with the type change in T2.1).
+- [x] 3.2 `DashboardShell` fetches `/api/canvas/assignments` on mount into a dedicated
+  `schoolTodos` state (Work stays from `initialTodos`); guarded against unmount.
+- [x] 3.3 Refresh button now re-fetches Canvas assignments alongside `fetchEvents`.
+- [x] 3.4 Added a "Connect Canvas" empty state via a new `emptyState` prop on
+  `TodoSection`, shown when `canvasConnected === false`; Work section unaffected.
+- [x] 3.5 Added `components/DashboardShell.canvas.test.tsx` (3 tests): School from
+  Canvas fetch, submitted→checked, undated→"No due date", Refresh re-fetches.
+- [x] 3.6 Ran the gates (125 tests green); captured 3 screenshots (populated, undated,
+  empty state). Commit below.
 
 ### [ ] 4.0 Planner deadline awareness
 

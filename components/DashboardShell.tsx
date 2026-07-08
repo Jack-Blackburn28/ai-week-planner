@@ -57,7 +57,12 @@ export function DashboardShell() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [connected, setConnected] = useState<boolean | null>(null);
-  const [todos, setTodos] = useState<TodoItem[]>(initialTodos);
+  // Work todos stay mock until Granola (Story 5). School todos come from Canvas.
+  const [workTodos, setWorkTodos] = useState<TodoItem[]>(() =>
+    initialTodos.filter((t) => t.section === "work"),
+  );
+  const [schoolTodos, setSchoolTodos] = useState<TodoItem[]>([]);
+  const [canvasConnected, setCanvasConnected] = useState<boolean | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [chatOpen, setChatOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -69,7 +74,31 @@ export function DashboardShell() {
     () => [...googleBlocks, ...blocks],
     [googleBlocks, blocks],
   );
+  const allTodos = useMemo(
+    () => [...workTodos, ...schoolTodos],
+    [workTodos, schoolTodos],
+  );
   const hasProposal = blocks.some((b) => b.status === "proposed");
+
+  // Pull School assignments from Canvas (status drives the empty state).
+  const fetchAssignments = useCallback(async () => {
+    try {
+      const [statusRes, itemsRes] = await Promise.all([
+        fetch("/api/canvas/status"),
+        fetch("/api/canvas/assignments"),
+      ]);
+      if (statusRes.ok) {
+        const s = (await statusRes.json()) as { connected: boolean };
+        setCanvasConnected(Boolean(s.connected));
+      }
+      if (itemsRes.ok) {
+        const items = (await itemsRes.json()) as TodoItem[];
+        setSchoolTodos(Array.isArray(items) ? items : []);
+      }
+    } catch {
+      /* leave prior assignments */
+    }
+  }, []);
 
   const fetchEvents = useCallback(async (offset: number) => {
     setGoogleLoading(true);
@@ -107,6 +136,13 @@ export function DashboardShell() {
     };
   }, []);
 
+  // Fetch Canvas assignments once on mount (refreshed via the Refresh button).
+  useEffect(() => {
+    void (async () => {
+      await fetchAssignments();
+    })();
+  }, [fetchAssignments]);
+
   // Fetch events for the displayed week (on mount and whenever the week changes).
   // setState runs only after the fetch resolves, guarded against unmount.
   useEffect(() => {
@@ -140,10 +176,12 @@ export function DashboardShell() {
   const pushMessage = (role: ChatRole, text: string) =>
     setMessages((prev) => [...prev, { id: nextId(), role, text }]);
 
-  const toggleTodo = (id: string) =>
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
-    );
+  const toggleTodo = (id: string) => {
+    const flip = (list: TodoItem[]) =>
+      list.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
+    setWorkTodos(flip);
+    setSchoolTodos(flip);
+  };
 
   /** Send a message to the AI planner and apply its reply + proposal. */
   const handleSend = async (text: string) => {
@@ -158,7 +196,7 @@ export function DashboardShell() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           messages: conversation,
-          week: toWeekState(allBlocks, todos),
+          week: toWeekState(allBlocks, allTodos),
         }),
       });
       const data: PlannerResponse & { error?: string } = await res.json();
@@ -291,7 +329,10 @@ export function DashboardShell() {
             allDayEvents={allDayEvents}
             weekOffset={weekOffset}
             onWeekOffsetChange={setWeekOffset}
-            onRefresh={() => void fetchEvents(weekOffset)}
+            onRefresh={() => {
+              void fetchEvents(weekOffset);
+              void fetchAssignments();
+            }}
             loading={googleLoading}
           />
         </main>
@@ -304,15 +345,31 @@ export function DashboardShell() {
         >
           <TodoSection
             title="Work"
-            items={todos.filter((t) => t.section === "work")}
+            items={workTodos}
             today={today}
             onToggle={toggleTodo}
           />
           <TodoSection
             title="School"
-            items={todos.filter((t) => t.section === "school")}
+            items={schoolTodos}
             today={today}
             onToggle={toggleTodo}
+            emptyState={
+              canvasConnected === false ? (
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-hairline bg-surface px-3 py-2 text-sm">
+                  <span className="text-ink-soft">
+                    Connect Canvas to see your assignments.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSettingsOpen(true)}
+                    className="shrink-0 rounded-md bg-work px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
+                  >
+                    Connect
+                  </button>
+                </div>
+              ) : undefined
+            }
           />
         </aside>
       </div>
