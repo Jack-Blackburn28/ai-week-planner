@@ -53,8 +53,14 @@ export function mapEvents(
 
   const timed: CalendarBlock[] = [];
   const allDay: AllDayEvent[] = [];
+  // The same event can appear in more than one mapped calendar (e.g. a meeting
+  // on both the work and personal calendars). Keep the first occurrence only —
+  // this de-duplicates the display and avoids duplicate React keys.
+  const seen = new Set<string>();
 
   for (const e of events) {
+    if (seen.has(e.id)) continue;
+    seen.add(e.id);
     const meta = metaByCalendar[e.calendarId] ?? {
       source: "personal",
       immovable: true,

@@ -55,8 +55,14 @@ export function DashboardShell() {
   // Local blocks: proposals + locally-approved. Real Google events live in
   // `googleBlocks`; the calendar renders the two merged.
   const [blocks, setBlocks] = useState<CalendarBlock[]>([]);
-  const [googleBlocks, setGoogleBlocks] = useState<CalendarBlock[]>([]);
-  const [allDayEvents, setAllDayEvents] = useState<AllDayEvent[]>([]);
+  // Per-week cache of Google events so flipping weeks is instant (cached weeks
+  // render immediately; a background re-fetch keeps them fresh). Neighbors are
+  // prefetched. `cachedRef`/`fetchingRef` avoid loading flicker + duplicate fetches.
+  const [weekCache, setWeekCache] = useState<
+    Record<number, { blocks: CalendarBlock[]; allDay: AllDayEvent[] }>
+  >({});
+  const cachedRef = useRef<Set<number>>(new Set());
+  const fetchingRef = useRef<Set<number>>(new Set());
   const [weekOffset, setWeekOffset] = useState(0);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [connected, setConnected] = useState<boolean | null>(null);
@@ -74,9 +80,10 @@ export function DashboardShell() {
   const [thinking, setThinking] = useState(false);
   const idRef = useRef(0);
 
+  const allDayEvents = weekCache[weekOffset]?.allDay ?? [];
   const allBlocks = useMemo(
-    () => [...googleBlocks, ...blocks],
-    [googleBlocks, blocks],
+    () => [...(weekCache[weekOffset]?.blocks ?? []), ...blocks],
+    [weekCache, weekOffset, blocks],
   );
   // Completed ids exclude cleared items from the active lists (and the planner).
   const completedIds = useMemo(
@@ -150,24 +157,36 @@ export function DashboardShell() {
     }
   }, []);
 
-  const fetchEvents = useCallback(async (offset: number) => {
-    setGoogleLoading(true);
-    try {
-      const res = await fetch(`/api/google/events?week=${offset}`);
-      if (res.ok) {
-        const data = (await res.json()) as {
-          blocks?: CalendarBlock[];
-          allDay?: AllDayEvent[];
-        };
-        setGoogleBlocks(Array.isArray(data.blocks) ? data.blocks : []);
-        setAllDayEvents(Array.isArray(data.allDay) ? data.allDay : []);
+  const fetchWeek = useCallback(
+    async (offset: number, opts?: { showLoading?: boolean }) => {
+      if (fetchingRef.current.has(offset)) return;
+      fetchingRef.current.add(offset);
+      if (opts?.showLoading) setGoogleLoading(true);
+      try {
+        const res = await fetch(`/api/google/events?week=${offset}`);
+        if (res.ok) {
+          const data = (await res.json()) as {
+            blocks?: CalendarBlock[];
+            allDay?: AllDayEvent[];
+          };
+          cachedRef.current.add(offset);
+          setWeekCache((prev) => ({
+            ...prev,
+            [offset]: {
+              blocks: Array.isArray(data.blocks) ? data.blocks : [],
+              allDay: Array.isArray(data.allDay) ? data.allDay : [],
+            },
+          }));
+        }
+      } catch {
+        /* keep prior cached week */
+      } finally {
+        fetchingRef.current.delete(offset);
+        if (opts?.showLoading) setGoogleLoading(false);
       }
-    } catch {
-      /* leave prior events */
-    } finally {
-      setGoogleLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Check connection once on mount.
   useEffect(() => {
@@ -205,34 +224,13 @@ export function DashboardShell() {
     })();
   }, [fetchCompleted]);
 
-  // Fetch events for the displayed week (on mount and whenever the week changes).
-  // setState runs only after the fetch resolves, guarded against unmount.
+  // Show the current week instantly if cached, refresh it in the background, and
+  // prefetch the neighboring weeks so ‹ / › flips feel instant (no reload flicker).
   useEffect(() => {
-    let active = true;
-    void (async () => {
-      setGoogleLoading(true);
-      try {
-        const res = await fetch(`/api/google/events?week=${weekOffset}`);
-        const data = res.ok
-          ? ((await res.json()) as {
-              blocks?: CalendarBlock[];
-              allDay?: AllDayEvent[];
-            })
-          : null;
-        if (active && data) {
-          setGoogleBlocks(Array.isArray(data.blocks) ? data.blocks : []);
-          setAllDayEvents(Array.isArray(data.allDay) ? data.allDay : []);
-        }
-      } catch {
-        /* leave prior events */
-      } finally {
-        if (active) setGoogleLoading(false);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [weekOffset]);
+    void fetchWeek(weekOffset, { showLoading: !cachedRef.current.has(weekOffset) });
+    void fetchWeek(weekOffset - 1);
+    void fetchWeek(weekOffset + 1);
+  }, [weekOffset, fetchWeek]);
   const nextId = () => `m${idRef.current++}`;
 
   const pushMessage = (role: ChatRole, text: string) =>
@@ -325,7 +323,7 @@ export function DashboardShell() {
       });
       if (!res.ok) throw new Error("commit failed");
       setBlocks((prev) => prev.filter((b) => b.status !== "proposed"));
-      await fetchEvents(weekOffset);
+      await fetchWeek(weekOffset);
       pushMessage("assistant", "Done — added to your AI Calendar. ✅");
     } catch {
       // Fall back to a local approve so nothing is lost if the write fails.
@@ -419,7 +417,7 @@ export function DashboardShell() {
             weekOffset={weekOffset}
             onWeekOffsetChange={setWeekOffset}
             onRefresh={() => {
-              void fetchEvents(weekOffset);
+              void fetchWeek(weekOffset, { showLoading: true });
               void fetchAssignments();
               void fetchActions();
               void fetchCompleted();

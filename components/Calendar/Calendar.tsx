@@ -12,8 +12,10 @@ import {
   windowForBlocks,
 } from "@/lib/time";
 import { formatWeekRange, isSameDay, weekDates } from "@/lib/week";
+import { cascadeDepths } from "@/lib/overlap";
 import type { AllDayEvent } from "@/lib/google/eventMap";
 import { CalendarBlock } from "./CalendarBlock";
+import { NowLine } from "./NowLine";
 import { AllDayStrip } from "./AllDayStrip";
 import { Legend } from "@/components/Legend";
 
@@ -173,6 +175,11 @@ export function Calendar({
             {/* Day columns */}
             {dates.map((date, dayIndex) => {
               const today = isSameDay(date, referenceDate);
+              const dayTop = topLevel.filter((b) => b.day === dayIndex);
+              const dayNested = nested.filter((b) => b.day === dayIndex);
+              // Cascade depth per group so overlapping meetings fan out.
+              const topDepth = cascadeDepths(dayTop);
+              const nestedDepth = cascadeDepths(dayNested);
               return (
                 <div
                   key={dayIndex}
@@ -186,16 +193,24 @@ export function Calendar({
                     backgroundSize: `100% ${HOUR_PX}px`,
                   }}
                 >
-                  {topLevel
-                    .filter((b) => b.day === dayIndex)
-                    .map((b) => (
-                      <CalendarBlock key={b.id} block={b} window={window} />
-                    ))}
-                  {nested
-                    .filter((b) => b.day === dayIndex)
-                    .map((b) => (
-                      <CalendarBlock key={b.id} block={b} window={window} nested />
-                    ))}
+                  {dayTop.map((b) => (
+                    <CalendarBlock
+                      key={b.id}
+                      block={b}
+                      window={window}
+                      depth={topDepth[b.id] ?? 0}
+                    />
+                  ))}
+                  {dayNested.map((b) => (
+                    <CalendarBlock
+                      key={b.id}
+                      block={b}
+                      window={window}
+                      nested
+                      depth={nestedDepth[b.id] ?? 0}
+                    />
+                  ))}
+                  {today && <NowLine referenceDate={referenceDate} window={window} />}
                 </div>
               );
             })}

@@ -34,18 +34,31 @@ const SOURCE_STYLE: Record<
   },
 };
 
+/** Horizontal offset (px) applied per cascade level for overlapping blocks. */
+const CASCADE_STEP = 16;
+
 interface CalendarBlockProps {
   block: Block;
   window: GridWindow;
   /** Meetings shown inside a work-hours block get an inset, solid style. */
   nested?: boolean;
+  /** Cascade depth: how many earlier overlapping blocks. Offsets this one right. */
+  depth?: number;
 }
 
-export function CalendarBlock({ block, window, nested }: CalendarBlockProps) {
+export function CalendarBlock({
+  block,
+  window,
+  nested,
+  depth = 0,
+}: CalendarBlockProps) {
   const style = SOURCE_STYLE[block.source];
   const top = minutesToTopPx(block.startMinutes, window);
   const height = durationToHeightPx(block.startMinutes, block.endMinutes);
   const isProposed = block.status === "proposed";
+  // Overlapping blocks fan out: each deeper block is nudged right and layered on
+  // top, so the ones behind still peek out on the left instead of being covered.
+  const leftPx = (nested ? 10 : 2) + depth * CASCADE_STEP;
 
   // Nested meetings: solid fill, white text, inset from the left so the parent
   // work block reads as "containing" them. Everything else: soft fill.
@@ -66,9 +79,9 @@ export function CalendarBlock({ block, window, nested }: CalendarBlockProps) {
       style={{
         top: `${top}px`,
         height: `${Math.max(height, 18)}px`,
-        left: nested ? "10px" : "2px",
+        left: `${leftPx}px`,
         right: "2px",
-        zIndex: nested ? 10 : 1,
+        zIndex: (nested ? 10 : 1) + depth,
       }}
       title={`${block.title} · ${formatRange(block.startMinutes, block.endMinutes)}`}
     >
