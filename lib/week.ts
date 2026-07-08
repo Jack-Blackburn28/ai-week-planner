@@ -22,6 +22,18 @@ export function weekDates(reference: Date, weekOffset = 0): Date[] {
   return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
 }
 
+/**
+ * Which column (0 = Mon … 6 = Sun) a real date falls on within the week
+ * `weekOffset` weeks from `reference`, or -1 if it's outside that week.
+ */
+export function dayIndexForDate(
+  date: Date,
+  reference: Date,
+  weekOffset = 0,
+): number {
+  return weekDates(reference, weekOffset).findIndex((d) => isSameDay(d, date));
+}
+
 /** True if two dates fall on the same calendar day. */
 export function isSameDay(a: Date, b: Date): boolean {
   return (

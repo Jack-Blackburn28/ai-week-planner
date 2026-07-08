@@ -25,6 +25,8 @@ export interface RawEvent {
   end: { dateTime?: string | null; date?: string | null };
   /** The calendar this event came from (so we can tag work vs personal). */
   calendarId: string;
+  /** App-private metadata (e.g. the original block `source`) on AI-written events. */
+  extendedProperties?: { private?: Record<string, string> | null } | null;
 }
 
 /** An event to write to the AI Calendar. */
@@ -83,6 +85,7 @@ export const googleCalendarClient: GoogleCalendarClient = {
       start: { dateTime: e.start?.dateTime, date: e.start?.date },
       end: { dateTime: e.end?.dateTime, date: e.end?.date },
       calendarId,
+      extendedProperties: e.extendedProperties,
     }));
   },
 

@@ -4,16 +4,17 @@ import { useMemo, useState } from "react";
 import type { CalendarBlock as Block } from "@/lib/types";
 import { DAY_LABELS } from "@/lib/config";
 import {
-  defaultWindow,
   gridHeightPx,
   HOUR_PX,
   formatHour,
   hourMarks,
   minutesToTopPx,
-  type GridWindow,
+  windowForBlocks,
 } from "@/lib/time";
 import { formatWeekRange, isSameDay, weekDates } from "@/lib/week";
+import type { AllDayEvent } from "@/lib/google/eventMap";
 import { CalendarBlock } from "./CalendarBlock";
+import { AllDayStrip } from "./AllDayStrip";
 import { Legend } from "@/components/Legend";
 
 const GUTTER_PX = 52;
@@ -22,21 +23,35 @@ interface CalendarProps {
   blocks: Block[];
   /** "Today" — drives the highlighted column and the default week. */
   referenceDate: Date;
-  /** Visible time window; defaults to the configured 6am–10pm. */
-  window?: GridWindow;
+  /** All-day events for the displayed week (thin top strip; not busy). */
+  allDayEvents?: AllDayEvent[];
+  /** Controlled week offset (0 = this week). Falls back to internal state. */
+  weekOffset?: number;
+  onWeekOffsetChange?: (offset: number) => void;
+  /** Optional manual refresh (re-pull events from Google). */
+  onRefresh?: () => void;
+  loading?: boolean;
 }
 
 export function Calendar({
   blocks,
   referenceDate,
-  window = defaultWindow,
+  allDayEvents = [],
+  weekOffset,
+  onWeekOffsetChange,
+  onRefresh,
+  loading = false,
 }: CalendarProps) {
-  const [weekOffset, setWeekOffset] = useState(0);
+  const [internalOffset, setInternalOffset] = useState(0);
+  const offset = weekOffset ?? internalOffset;
+  const changeOffset = onWeekOffsetChange ?? setInternalOffset;
 
   const dates = useMemo(
-    () => weekDates(referenceDate, weekOffset),
-    [referenceDate, weekOffset],
+    () => weekDates(referenceDate, offset),
+    [referenceDate, offset],
   );
+  // Widen the window to fit any out-of-range Google events.
+  const window = useMemo(() => windowForBlocks(blocks), [blocks]);
   const marks = hourMarks(window);
   const bodyHeight = gridHeightPx(window);
   const gridCols = `${GUTTER_PX}px repeat(7, minmax(0, 1fr))`;
@@ -50,7 +65,7 @@ export function Calendar({
       <div className="flex items-center justify-between gap-3 px-1 pb-3">
         <h2 className="text-sm font-semibold text-ink">
           {formatWeekRange(dates)}
-          {weekOffset === 0 && (
+          {offset === 0 && (
             <span className="ml-2 rounded-full bg-work-soft px-2 py-0.5 text-[11px] font-medium text-work">
               This week
             </span>
@@ -59,17 +74,28 @@ export function Calendar({
         <div className="flex items-center gap-3">
           <Legend className="hidden lg:flex" />
           <div className="flex items-center gap-1">
+            {onRefresh && (
+              <button
+                type="button"
+                aria-label="Refresh calendar"
+                onClick={onRefresh}
+                disabled={loading}
+                className="mr-1 rounded-md border border-hairline bg-panel px-2 py-1 text-xs font-medium text-ink-soft hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring disabled:opacity-50"
+              >
+                {loading ? "Refreshing…" : "Refresh"}
+              </button>
+            )}
             <button
               type="button"
               aria-label="Previous week"
-              onClick={() => setWeekOffset((w) => w - 1)}
+              onClick={() => changeOffset(offset - 1)}
               className="rounded-md border border-hairline bg-panel px-2 py-1 text-sm text-ink-soft hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
             >
               ‹
             </button>
             <button
               type="button"
-              onClick={() => setWeekOffset(0)}
+              onClick={() => changeOffset(0)}
               className="rounded-md border border-hairline bg-panel px-2 py-1 text-xs font-medium text-ink hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
             >
               Today
@@ -77,7 +103,7 @@ export function Calendar({
             <button
               type="button"
               aria-label="Next week"
-              onClick={() => setWeekOffset((w) => w + 1)}
+              onClick={() => changeOffset(offset + 1)}
               className="rounded-md border border-hairline bg-panel px-2 py-1 text-sm text-ink-soft hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
             >
               ›
@@ -103,6 +129,7 @@ export function Calendar({
                   key={i}
                   data-testid="day-header"
                   data-today={today ? "true" : "false"}
+                  data-date={`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`}
                   className="flex flex-col items-center py-2"
                 >
                   <span className="text-[11px] font-medium uppercase tracking-wide text-ink-soft">
@@ -121,6 +148,9 @@ export function Calendar({
               );
             })}
           </div>
+
+          {/* All-day strip (context only — not busy) */}
+          <AllDayStrip events={allDayEvents} gutterPx={GUTTER_PX} />
 
           {/* Grid body */}
           <div

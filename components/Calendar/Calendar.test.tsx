@@ -83,16 +83,48 @@ describe("Calendar", () => {
     expect(todays[0].textContent).toContain("8"); // the 8th
   });
 
-  it("is window-agnostic: a wider window re-anchors block offsets", () => {
+  it("auto-expands the window to fit an early event, re-anchoring offsets", () => {
+    const early: CalendarBlock = {
+      id: "early",
+      title: "Early flight",
+      source: "personal",
+      status: "approved",
+      day: 1,
+      startMinutes: 5 * 60,
+      endMinutes: 6 * 60,
+    };
+    const { container } = render(
+      <Calendar blocks={[...blocks, early]} referenceDate={REFERENCE} />,
+    );
+    // With a 5am event the window now starts at 5am, so 9:00 AM sits 4 hours down.
+    const work = container.querySelector('[data-block-id="w"]') as HTMLElement;
+    expect(work.style.top).toBe(`${4 * HOUR_PX}px`);
+  });
+
+  it("labels day columns with real dates for the displayed week", () => {
+    const { container } = render(
+      <Calendar blocks={[]} referenceDate={REFERENCE} weekOffset={0} />,
+    );
+    const headers = container.querySelectorAll('[data-testid="day-header"]');
+    // Mon 2026-07-06 … Sun 2026-07-12.
+    expect(headers[0].getAttribute("data-date")).toBe("2026-07-06");
+    expect(headers[6].getAttribute("data-date")).toBe("2026-07-12");
+  });
+
+  it("renders an all-day event in the top strip, not on the hourly grid", () => {
     const { container } = render(
       <Calendar
-        blocks={blocks}
+        blocks={[]}
         referenceDate={REFERENCE}
-        window={{ startHour: 5, endHour: 23 }}
+        allDayEvents={[
+          { id: "bday", title: "Mom's birthday", day: 2, source: "personal" },
+        ]}
       />,
     );
-    const work = container.querySelector('[data-block-id="w"]') as HTMLElement;
-    // 9:00 AM is now 4 hours below a 5am start.
-    expect(work.style.top).toBe(`${4 * HOUR_PX}px`);
+    const strip = container.querySelector('[data-testid="all-day-strip"]');
+    expect(strip).toBeInTheDocument();
+    expect(strip?.textContent).toContain("Mom's birthday");
+    // It is not rendered as a timed calendar block.
+    expect(container.querySelector('[data-block-id="bday"]')).toBeNull();
   });
 });

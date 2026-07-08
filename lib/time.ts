@@ -15,6 +15,27 @@ export const defaultWindow: GridWindow = {
   endHour: CALENDAR_END_HOUR,
 };
 
+/**
+ * Widen the default window just enough to fit every timed block (rounded to whole
+ * hours), so out-of-range Google events are visible without a rewrite. Never
+ * shrinks below the configured default.
+ */
+export function windowForBlocks(
+  blocks: { startMinutes: number; endMinutes: number }[],
+  base: GridWindow = defaultWindow,
+): GridWindow {
+  let startHour = base.startHour;
+  let endHour = base.endHour;
+  for (const b of blocks) {
+    startHour = Math.min(startHour, Math.floor(b.startMinutes / 60));
+    endHour = Math.max(endHour, Math.ceil(b.endMinutes / 60));
+  }
+  return {
+    startHour: Math.max(0, startHour),
+    endHour: Math.min(24, endHour),
+  };
+}
+
 /** Pixel height of one hour row. */
 export const HOUR_PX = 60;
 

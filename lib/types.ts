@@ -37,6 +37,10 @@ export interface CalendarBlock {
   parentId?: string;
   /** Optional short detail (e.g. a location or note). */
   detail?: string;
+  /** Google event id, when this block came from / was written to Google Calendar. */
+  googleEventId?: string;
+  /** The Google calendar this block came from (source tagging + busy model). */
+  calendarId?: string;
 }
 
 /** Which todo list an item belongs to. */

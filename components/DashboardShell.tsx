@@ -1,12 +1,20 @@
 "use client";
 
-import { useRef, useState, useSyncExternalStore } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import type { CalendarBlock, ChatMessage, ChatRole, TodoItem } from "@/lib/types";
-import { initialBlocks, initialMessages, initialTodos } from "@/lib/mock-data";
+import { initialMessages, initialTodos } from "@/lib/mock-data";
 import { approveProposal, discardProposal } from "@/lib/planning";
 import { toCalendarBlocks } from "@/lib/planner/validate";
 import { toWeekState } from "@/lib/planner/week";
 import type { PlannerResponse } from "@/lib/planner/types";
+import type { AllDayEvent } from "@/lib/google/eventMap";
 import { Brand } from "@/components/Brand";
 import { Calendar } from "@/components/Calendar/Calendar";
 import { TodoSection } from "@/components/TodoSection/TodoSection";
@@ -40,7 +48,14 @@ function useHydrated(): boolean {
  */
 export function DashboardShell() {
   const hydrated = useHydrated();
-  const [blocks, setBlocks] = useState<CalendarBlock[]>(initialBlocks);
+  // Local blocks: proposals + locally-approved. Real Google events live in
+  // `googleBlocks`; the calendar renders the two merged.
+  const [blocks, setBlocks] = useState<CalendarBlock[]>([]);
+  const [googleBlocks, setGoogleBlocks] = useState<CalendarBlock[]>([]);
+  const [allDayEvents, setAllDayEvents] = useState<AllDayEvent[]>([]);
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [connected, setConnected] = useState<boolean | null>(null);
   const [todos, setTodos] = useState<TodoItem[]>(initialTodos);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [chatOpen, setChatOpen] = useState(false);
@@ -49,7 +64,76 @@ export function DashboardShell() {
   const [thinking, setThinking] = useState(false);
   const idRef = useRef(0);
 
+  const allBlocks = useMemo(
+    () => [...googleBlocks, ...blocks],
+    [googleBlocks, blocks],
+  );
   const hasProposal = blocks.some((b) => b.status === "proposed");
+
+  const fetchEvents = useCallback(async (offset: number) => {
+    setGoogleLoading(true);
+    try {
+      const res = await fetch(`/api/google/events?week=${offset}`);
+      if (res.ok) {
+        const data = (await res.json()) as {
+          blocks?: CalendarBlock[];
+          allDay?: AllDayEvent[];
+        };
+        setGoogleBlocks(Array.isArray(data.blocks) ? data.blocks : []);
+        setAllDayEvents(Array.isArray(data.allDay) ? data.allDay : []);
+      }
+    } catch {
+      /* leave prior events */
+    } finally {
+      setGoogleLoading(false);
+    }
+  }, []);
+
+  // Check connection once on mount.
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      try {
+        const res = await fetch("/api/google/status");
+        const s = res.ok ? ((await res.json()) as { work: boolean; personal: boolean }) : null;
+        if (active) setConnected(s ? s.work || s.personal : false);
+      } catch {
+        if (active) setConnected(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Fetch events for the displayed week (on mount and whenever the week changes).
+  // setState runs only after the fetch resolves, guarded against unmount.
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      setGoogleLoading(true);
+      try {
+        const res = await fetch(`/api/google/events?week=${weekOffset}`);
+        const data = res.ok
+          ? ((await res.json()) as {
+              blocks?: CalendarBlock[];
+              allDay?: AllDayEvent[];
+            })
+          : null;
+        if (active && data) {
+          setGoogleBlocks(Array.isArray(data.blocks) ? data.blocks : []);
+          setAllDayEvents(Array.isArray(data.allDay) ? data.allDay : []);
+        }
+      } catch {
+        /* leave prior events */
+      } finally {
+        if (active) setGoogleLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [weekOffset]);
   const nextId = () => `m${idRef.current++}`;
 
   const pushMessage = (role: ChatRole, text: string) =>
@@ -73,7 +157,7 @@ export function DashboardShell() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           messages: conversation,
-          week: toWeekState(blocks, todos),
+          week: toWeekState(allBlocks, todos),
         }),
       });
       const data: PlannerResponse & { error?: string } = await res.json();
@@ -161,7 +245,29 @@ export function DashboardShell() {
             mobileView === "calendar" ? "flex" : "hidden"
           }`}
         >
-          <Calendar blocks={blocks} referenceDate={today} />
+          {connected === false && (
+            <div className="mb-3 flex items-center justify-between gap-3 rounded-lg border border-hairline bg-panel px-3 py-2 text-sm">
+              <span className="text-ink-soft">
+                Connect your Google accounts to see your real calendar.
+              </span>
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(true)}
+                className="shrink-0 rounded-md bg-work px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
+              >
+                Connect
+              </button>
+            </div>
+          )}
+          <Calendar
+            blocks={allBlocks}
+            referenceDate={today}
+            allDayEvents={allDayEvents}
+            weekOffset={weekOffset}
+            onWeekOffsetChange={setWeekOffset}
+            onRefresh={() => void fetchEvents(weekOffset)}
+            loading={googleLoading}
+          />
         </main>
 
         {/* Right column — Work + School todo dashboard */}

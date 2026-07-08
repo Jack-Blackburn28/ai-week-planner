@@ -44,12 +44,18 @@ describe("DashboardShell — planner loop", () => {
     await openChatAndPlan();
 
     await screen.findByText("Here's a plan.");
-    // Request went to the planner endpoint with week + messages.
+    // Request went to the planner endpoint with week + messages. (The shell also
+    // calls /api/google/status and /api/google/events on mount, so find the
+    // planner call specifically rather than assuming it is first.)
     expect(fetch).toHaveBeenCalledWith(
       "/api/plan",
       expect.objectContaining({ method: "POST" }),
     );
-    const body = JSON.parse((fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body);
+    const planCall = (fetch as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c) => c[0] === "/api/plan",
+    );
+    expect(planCall).toBeDefined();
+    const body = JSON.parse(planCall![1].body);
     expect(Array.isArray(body.messages)).toBe(true);
     expect(body.week).toBeDefined();
 

@@ -118,7 +118,7 @@ it if absent) as the write-back target excluded from busy sources. Maps to Spec 
 - [x] 2.7 Extended `GoogleConnect.tsx` with the mapping UI (per-calendar work/personal/ignore selects + Save).
 - [x] 2.8 Wrote `lib/google/mapping.test.ts`: persistence round-trip; `busySources()` excludes the AI Calendar id.
 
-### [ ] 3.0 Read & display real events for the displayed week (with navigation + refresh)
+### [x] 3.0 Read & display real events for the displayed week (with navigation + refresh)
 
 Fetches events server-side for the mapped calendars over the displayed week's real dates,
 transforms them into `CalendarBlock`s (work nested, personal, all-day strip), adds
@@ -135,13 +135,13 @@ local timezone, and degrades gracefully when disconnected. Maps to Spec Unit 3.
 
 #### 3.0 Tasks
 
-- [ ] 3.1 Implement `lib/week-context.ts`: resolve displayed week Monday from an offset (0 = this week); map a real date to a day index (0..6) within that week; build the 7 column dates. Write `lib/week-context.test.ts`.
-- [ ] 3.2 Implement `lib/google/eventMap.ts`: Google event → `CalendarBlock` (day index vs displayed week, start/end minutes in local tz, `source` from the calendar's mapping, carry `googleEventId`/`calendarId`); classify all-day (date-only) events separately; report the min-start/max-end needed for window expansion. Write `lib/google/eventMap.test.ts`.
-- [ ] 3.3 Update `lib/config.ts` to support a dynamic visible window (expand start/end to fit out-of-range timed events) while keeping the default 6am–10pm.
-- [ ] 3.4 Add `app/api/google/events/route.ts`: given a week offset, fetch events for all mapped busy-source calendars, map to blocks (+ all-day list), and return them; graceful empty result when nothing is connected.
-- [ ] 3.5 Update `components/DashboardShell.tsx`: add week-offset state + prev/next controls + a Refresh button; fetch `/api/google/events` on mount, on refresh, and on week change; merge fetched blocks into calendar state; show a "Connect your Google accounts" empty state when disconnected.
-- [ ] 3.6 Update `components/Calendar/Calendar.tsx` to label day columns with real dates and honor the (possibly expanded) window; add `components/Calendar/AllDayStrip.tsx` for the all-day row.
-- [ ] 3.7 Extend `components/Calendar/Calendar.test.tsx`: real dates render on columns; all-day events show in the strip and not on the hourly grid.
+- [x] 3.1 Added `dayIndexForDate` to the existing `lib/week.ts` (reused Story 1's tested `weekDates`/`isSameDay`/`weekOffset` instead of a new `lib/week-context.ts`). Covered by `eventMap.test.ts`.
+- [x] 3.2 Implemented `lib/google/eventMap.ts`: Google event → `CalendarBlock` (day index vs displayed week, local-tz minutes, source from mapping/`extendedProperties`, carries `googleEventId`/`calendarId`, `immovable` per source); all-day classified separately. Test: `eventMap.test.ts`.
+- [x] 3.3 Added `windowForBlocks` to `lib/time.ts` (expands the default 6am–10pm to fit out-of-range events). Covered by `eventMap.test.ts`.
+- [x] 3.4 Added `app/api/google/events/route.ts`: fetches mapped calendars for the week offset, maps to blocks + all-day list, excludes AI Calendar from busy sources, empty when disconnected.
+- [x] 3.5 Updated `DashboardShell.tsx`: week-offset state, per-week fetch on mount/change, Refresh handler, merged Google + local blocks, connect-prompt empty state. Calendar now shows only Google events (mock skeleton removed).
+- [x] 3.6 Updated `Calendar.tsx` (controlled week offset, real-date `data-date` headers, expanded window, Refresh button) and added `components/Calendar/AllDayStrip.tsx`.
+- [x] 3.7 Extended `Calendar.test.tsx`: real-date headers; all-day event in the strip not the grid; window auto-expansion. Updated `DashboardShell.test.tsx` for the new mount fetches.
 
 ### [ ] 4.0 Write-back to "AI Calendar" + real busy model in the planner
 
