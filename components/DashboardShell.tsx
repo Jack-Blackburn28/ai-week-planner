@@ -21,6 +21,7 @@ import { TodoSection } from "@/components/TodoSection/TodoSection";
 import { ChatBubble } from "@/components/Chat/ChatBubble";
 import { ChatDrawer } from "@/components/Chat/ChatDrawer";
 import { GoogleConnect } from "@/components/Settings/GoogleConnect";
+import { CanvasConnect } from "@/components/Settings/CanvasConnect";
 
 const ERROR_REPLY =
   "Sorry — I couldn't reach the planner just now. Please try again in a moment.";
@@ -316,7 +317,7 @@ export function DashboardShell() {
         </aside>
       </div>
 
-      {/* Settings drawer — Google account connections (+ calendar mapping) */}
+      {/* Settings drawer — Google account connections (+ calendar mapping) + Canvas status */}
       {settingsOpen && (
         <div
           className="fixed inset-0 z-40 flex justify-end bg-black/30"
@@ -340,6 +341,8 @@ export function DashboardShell() {
               </button>
             </div>
             <GoogleConnect />
+            <div className="h-px bg-hairline" />
+            <CanvasConnect />
           </div>
         </div>
       )}

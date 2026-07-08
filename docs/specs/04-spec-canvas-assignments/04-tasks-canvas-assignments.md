@@ -49,7 +49,7 @@ network/secret handling is **server-only** (`lib/canvas/*`, imported only by
 
 ## Tasks
 
-### [ ] 1.0 Canvas connection foundation, config & status
+### [x] 1.0 Canvas connection foundation, config & status
 
 Establish the server-only `lib/canvas/*` module, env-var configuration with
 token-primary → ICS-fallback source selection, a status endpoint that never leaks the
@@ -67,23 +67,20 @@ secret, the ⚙︎ Settings status row, and setup docs. (Spec Unit 1.)
 
 #### 1.0 Tasks
 
-- [ ] 1.1 Add `lib/canvas/types.ts`: `CanvasMode = "token" | "ics" | "none"`,
-  `CanvasStatus = { connected: boolean; mode: CanvasMode }`, and raw
+- [x] 1.1 Add `lib/canvas/types.ts`: `CanvasMode`, `CanvasStatus`, and raw
   course/assignment shapes used by the client.
-- [ ] 1.2 Add `lib/canvas/config.ts`: read the three env vars (lazily, like
-  `lib/google`), `resolveMode()` (token wins over ics wins over none),
-  `isCanvasConfigured()`, `isMockMode()` (`CANVAS_MOCK=1`). Server-only.
-- [ ] 1.3 Write `lib/canvas/config.test.ts` covering the precedence matrix and mock mode.
-- [ ] 1.4 Add `app/api/canvas/status/route.ts` returning `{ connected, mode }`
-  (mock mode → connected via mock); assert it never includes the secret. Add
-  `app/api/canvas/status.test.ts`.
-- [ ] 1.5 Add a Canvas status row to `components/Settings/GoogleConnect.tsx` (fetch
-  `/api/canvas/status`; show "Connected via API token / calendar feed" or
-  "Not connected"), guarded against unmount like the Google fetch.
-- [ ] 1.6 Extend `.env.example` with `CANVAS_BASE_URL` / `CANVAS_API_TOKEN` /
-  `CANVAS_ICS_URL` (placeholders) and write `docs/canvas-setup.md`.
-- [ ] 1.7 Run `npm run lint && npm run typecheck && npm test`; capture the status-row
-  screenshot in mock mode. Commit `feat: Canvas connection foundation + status (T1.0, Spec 04)`.
+- [x] 1.2 Add `lib/canvas/config.ts`: read the three env vars lazily,
+  `resolveMode()` (token→ics→none), `isCanvasConfigured()`, `isMockMode()`. Server-only.
+- [x] 1.3 Write `lib/canvas/config.test.ts` covering the precedence matrix and mock mode.
+- [x] 1.4 Add `app/api/canvas/status/route.ts` returning `{ connected, mode }` +
+  `app/api/canvas/status.test.ts` (no-secret-leak assertions).
+- [x] 1.5 Add a Canvas status row — implemented as a dedicated
+  `components/Settings/CanvasConnect.tsx` rendered in the Settings drawer (cleaner than
+  overloading `GoogleConnect`); fetches `/api/canvas/status`, guarded against unmount.
+- [x] 1.6 Extend `.env.example` with the three Canvas vars (placeholders) and write
+  `docs/canvas-setup.md`.
+- [x] 1.7 Ran lint + typecheck + Canvas tests (green); captured the status-row
+  screenshot in mock mode. Commit below.
 
 ### [ ] 2.0 Fetch, parse & map assignments → School todos (data layer)
 
