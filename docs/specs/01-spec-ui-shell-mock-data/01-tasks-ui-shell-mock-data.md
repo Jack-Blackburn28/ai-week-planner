@@ -254,7 +254,7 @@ the 2.0 logic. Maps to spec Unit 4.
 - [x] 5.7 Write `components/Chat/ChatDrawer.test.tsx` covering the echo reply, the
   approve→approved conversion, and the make-changes→no-commit path.
 
-### [ ] 6.0 Responsive/Mobile Layout, Legend & Polish
+### [x] 6.0 Responsive/Mobile Layout, Legend & Polish
 
 Phone experience (Calendar | Todos toggle, horizontal-scroll week, full-screen drawer),
 the color legend, accessibility basics, and a final clean/buildable pass. Maps to spec
@@ -274,18 +274,18 @@ Design Considerations + Success Metrics.
 
 #### 6.0 Tasks
 
-- [ ] 6.1 In `DashboardShell`, add the responsive breakpoint: below it, hide the
+- [x] 6.1 In `DashboardShell`, add the responsive breakpoint: below it, hide the
   side-by-side layout and show a top segmented **Calendar | Todos** toggle that switches
   the active main view.
-- [ ] 6.2 Make the week calendar horizontally scrollable on narrow widths so day columns
+- [x] 6.2 Make the week calendar horizontally scrollable on narrow widths so day columns
   stay readable.
-- [ ] 6.3 Make the chat drawer render full-screen on mobile widths.
-- [ ] 6.4 Build `components/Legend.tsx` (small, unobtrusive: Work/School/Personal colors
+- [x] 6.3 Make the chat drawer render full-screen on mobile widths.
+- [x] 6.4 Build `components/Legend.tsx` (small, unobtrusive: Work/School/Personal colors
   + "dashed = proposed") and place it near the calendar.
-- [ ] 6.5 Accessibility pass: ensure buttons/checkboxes are focusable and
+- [x] 6.5 Accessibility pass: ensure buttons/checkboxes are focusable and
   keyboard-activatable with accessible names, sufficient contrast, and non-color signals
   (dashed border for proposed, text label for due-soon/overdue).
-- [ ] 6.6 Final pass: verify clean boot (no console errors), `npm run build` succeeds,
+- [x] 6.6 Final pass: verify clean boot (no console errors), `npm run build` succeeds,
   and all gates are green.
-- [ ] 6.7 Add an accessibility test (checkbox + buttons keyboard-activatable with
+- [x] 6.7 Add an accessibility test (checkbox + buttons keyboard-activatable with
   accessible names).

@@ -14,6 +14,7 @@ import {
 } from "@/lib/time";
 import { formatWeekRange, isSameDay, weekDates } from "@/lib/week";
 import { CalendarBlock } from "./CalendarBlock";
+import { Legend } from "@/components/Legend";
 
 const GUTTER_PX = 52;
 
@@ -55,113 +56,120 @@ export function Calendar({
             </span>
           )}
         </h2>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label="Previous week"
-            onClick={() => setWeekOffset((w) => w - 1)}
-            className="rounded-md border border-hairline bg-panel px-2 py-1 text-sm text-ink-soft hover:bg-surface"
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            onClick={() => setWeekOffset(0)}
-            className="rounded-md border border-hairline bg-panel px-2 py-1 text-xs font-medium text-ink hover:bg-surface"
-          >
-            Today
-          </button>
-          <button
-            type="button"
-            aria-label="Next week"
-            onClick={() => setWeekOffset((w) => w + 1)}
-            className="rounded-md border border-hairline bg-panel px-2 py-1 text-sm text-ink-soft hover:bg-surface"
-          >
-            ›
-          </button>
+        <div className="flex items-center gap-3">
+          <Legend className="hidden lg:flex" />
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              aria-label="Previous week"
+              onClick={() => setWeekOffset((w) => w - 1)}
+              className="rounded-md border border-hairline bg-panel px-2 py-1 text-sm text-ink-soft hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={() => setWeekOffset(0)}
+              className="rounded-md border border-hairline bg-panel px-2 py-1 text-xs font-medium text-ink hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              aria-label="Next week"
+              onClick={() => setWeekOffset((w) => w + 1)}
+              className="rounded-md border border-hairline bg-panel px-2 py-1 text-sm text-ink-soft hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
+            >
+              ›
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Day headers */}
-      <div
-        className="grid border-b border-hairline"
-        style={{ gridTemplateColumns: gridCols }}
-      >
-        <div />
-        {dates.map((date, i) => {
-          const today = isSameDay(date, referenceDate);
-          return (
-            <div
-              key={i}
-              data-testid="day-header"
-              data-today={today ? "true" : "false"}
-              className="flex flex-col items-center py-2"
-            >
-              <span className="text-[11px] font-medium uppercase tracking-wide text-ink-soft">
-                {DAY_LABELS[i]}
-              </span>
-              <span
-                className={
-                  today
-                    ? "mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-work text-sm font-semibold text-white"
-                    : "mt-0.5 flex h-7 w-7 items-center justify-center text-sm font-semibold text-ink"
-                }
-              >
-                {date.getDate()}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Scrollable grid body */}
+      {/* Scroll area — scrolls vertically always, and horizontally on narrow
+          screens (min-width keeps day columns readable on a phone). */}
       <div className="min-h-0 flex-1 overflow-auto">
-        <div
-          className="grid"
-          style={{ gridTemplateColumns: gridCols, height: `${bodyHeight}px` }}
-        >
-          {/* Hour gutter */}
-          <div className="relative">
-            {marks.map((h) => (
-              <span
-                key={h}
-                className="absolute right-1 -translate-y-1/2 text-[10px] text-ink-soft"
-                style={{ top: `${minutesToTopPx(h * 60, window)}px` }}
-              >
-                {formatHour(h)}
-              </span>
-            ))}
+        <div className="min-w-[760px] md:min-w-0">
+          {/* Day headers (stick to the top while scrolling vertically) */}
+          <div
+            className="sticky top-0 z-20 grid border-b border-hairline bg-surface"
+            style={{ gridTemplateColumns: gridCols }}
+          >
+            <div />
+            {dates.map((date, i) => {
+              const today = isSameDay(date, referenceDate);
+              return (
+                <div
+                  key={i}
+                  data-testid="day-header"
+                  data-today={today ? "true" : "false"}
+                  className="flex flex-col items-center py-2"
+                >
+                  <span className="text-[11px] font-medium uppercase tracking-wide text-ink-soft">
+                    {DAY_LABELS[i]}
+                  </span>
+                  <span
+                    className={
+                      today
+                        ? "mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-work text-sm font-semibold text-white"
+                        : "mt-0.5 flex h-7 w-7 items-center justify-center text-sm font-semibold text-ink"
+                    }
+                  >
+                    {date.getDate()}
+                  </span>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Day columns */}
-          {dates.map((date, dayIndex) => {
-            const today = isSameDay(date, referenceDate);
-            return (
-              <div
-                key={dayIndex}
-                data-testid="day-column"
-                className={`relative border-l border-hairline ${
-                  today ? "bg-work-soft/30" : ""
-                }`}
-                style={{
-                  backgroundImage:
-                    "repeating-linear-gradient(to bottom, transparent 0, transparent 59px, var(--color-hairline) 59px, var(--color-hairline) 60px)",
-                  backgroundSize: `100% ${HOUR_PX}px`,
-                }}
-              >
-                {topLevel
-                  .filter((b) => b.day === dayIndex)
-                  .map((b) => (
-                    <CalendarBlock key={b.id} block={b} window={window} />
-                  ))}
-                {nested
-                  .filter((b) => b.day === dayIndex)
-                  .map((b) => (
-                    <CalendarBlock key={b.id} block={b} window={window} nested />
-                  ))}
-              </div>
-            );
-          })}
+          {/* Grid body */}
+          <div
+            className="grid"
+            style={{ gridTemplateColumns: gridCols, height: `${bodyHeight}px` }}
+          >
+            {/* Hour gutter */}
+            <div className="relative">
+              {marks.map((h) => (
+                <span
+                  key={h}
+                  className="absolute right-1 -translate-y-1/2 text-[10px] text-ink-soft"
+                  style={{ top: `${minutesToTopPx(h * 60, window)}px` }}
+                >
+                  {formatHour(h)}
+                </span>
+              ))}
+            </div>
+
+            {/* Day columns */}
+            {dates.map((date, dayIndex) => {
+              const today = isSameDay(date, referenceDate);
+              return (
+                <div
+                  key={dayIndex}
+                  data-testid="day-column"
+                  className={`relative border-l border-hairline ${
+                    today ? "bg-work-soft/30" : ""
+                  }`}
+                  style={{
+                    backgroundImage:
+                      "repeating-linear-gradient(to bottom, transparent 0, transparent 59px, var(--color-hairline) 59px, var(--color-hairline) 60px)",
+                    backgroundSize: `100% ${HOUR_PX}px`,
+                  }}
+                >
+                  {topLevel
+                    .filter((b) => b.day === dayIndex)
+                    .map((b) => (
+                      <CalendarBlock key={b.id} block={b} window={window} />
+                    ))}
+                  {nested
+                    .filter((b) => b.day === dayIndex)
+                    .map((b) => (
+                      <CalendarBlock key={b.id} block={b} window={window} nested />
+                    ))}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

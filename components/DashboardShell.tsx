@@ -45,6 +45,7 @@ export function DashboardShell() {
   const [todos, setTodos] = useState<TodoItem[]>(initialTodos);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [chatOpen, setChatOpen] = useState(false);
+  const [mobileView, setMobileView] = useState<"calendar" | "todos">("calendar");
   const idRef = useRef(0);
 
   const hasProposal = blocks.some((b) => b.status === "proposed");
@@ -95,16 +96,47 @@ export function DashboardShell() {
     <div className="flex h-dvh flex-col bg-surface">
       <header className="flex items-center justify-between border-b border-hairline bg-panel px-4 py-3">
         <Brand />
+        {/* Mobile-only view switcher (side-by-side on desktop) */}
+        <div
+          role="tablist"
+          aria-label="Switch view"
+          className="flex rounded-lg border border-hairline bg-surface p-0.5 text-sm md:hidden"
+        >
+          {(["calendar", "todos"] as const).map((view) => (
+            <button
+              key={view}
+              type="button"
+              role="tab"
+              aria-selected={mobileView === view}
+              onClick={() => setMobileView(view)}
+              className={`rounded-md px-3 py-1 font-medium capitalize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring ${
+                mobileView === view
+                  ? "bg-panel text-ink shadow-sm"
+                  : "text-ink-soft"
+              }`}
+            >
+              {view === "todos" ? "Todos" : "Calendar"}
+            </button>
+          ))}
+        </div>
       </header>
 
       <div className="flex min-h-0 flex-1">
         {/* Calendar — dominant left surface */}
-        <main className="min-w-0 flex-1 overflow-hidden p-4">
+        <main
+          className={`min-w-0 flex-1 flex-col overflow-hidden p-4 md:flex ${
+            mobileView === "calendar" ? "flex" : "hidden"
+          }`}
+        >
           <Calendar blocks={blocks} referenceDate={today} />
         </main>
 
         {/* Right column — Work + School todo dashboard */}
-        <aside className="hidden w-[360px] shrink-0 flex-col gap-5 overflow-auto border-l border-hairline bg-panel p-4 md:flex">
+        <aside
+          className={`w-full shrink-0 flex-col gap-5 overflow-auto border-l border-hairline bg-panel p-4 md:flex md:w-[360px] ${
+            mobileView === "todos" ? "flex" : "hidden"
+          }`}
+        >
           <TodoSection
             title="Work"
             items={todos.filter((t) => t.section === "work")}
