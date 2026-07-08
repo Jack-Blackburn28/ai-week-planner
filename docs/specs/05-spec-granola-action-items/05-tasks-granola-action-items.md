@@ -150,7 +150,7 @@ Clearing any item moves it to a persisted, source-agnostic Completed store; add 
 - [x] 4.5 Gates; 2 screenshots; commit
   `feat: combined Active|Completed archive across Work+School (T4.0, Spec 05)`.
 
-### [ ] 5.0 Independent-scroll layout + planner integration
+### [x] 5.0 Independent-scroll layout + planner integration
 
 Bounded, independently-scrolling Work & School sections; confirm action items reach the
 planner without regressing its rules. (Unit 5.)
@@ -164,11 +164,11 @@ planner without regressing its rules. (Unit 5.)
 
 #### 5.0 Tasks
 
-- [ ] 5.1 Right-column layout: Work and School each `min-h-0` + `overflow-auto` within a
+- [x] 5.1 Right-column layout: Work and School each `min-h-0` + `overflow-auto` within a
   shared-height flex column, headers pinned; verify a long Work list doesn't push School
   off-screen (desktop) and mobile still works.
-- [ ] 5.2 Confirm/adjust `allTodos` (Work Granola + School Canvas) → `toWeekState`;
+- [x] 5.2 Confirm/adjust `allTodos` (Work Granola + School Canvas) → `toWeekState`;
   add/extend a test asserting Granola Work items appear in the planner week state.
-- [ ] 5.3 Run full planner rule tests (no regression).
-- [ ] 5.4 Gates; screenshot; commit
+- [x] 5.3 Run full planner rule tests (no regression).
+- [x] 5.4 Gates; screenshot; commit
   `feat: bounded independent-scroll todo lists + planner integration (T5.0, Spec 05)`.

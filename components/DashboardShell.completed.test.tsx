@@ -14,27 +14,31 @@ const WORK: TodoItem[] = [
 ];
 
 function mockFetch() {
-  const fn = vi.fn(async (url: string, _init?: RequestInit) => {
+  const state = { postedComplete: false };
+  const fn = vi.fn(async (url: string, init?: RequestInit) => {
     const ok = (body: unknown) => ({ ok: true, json: async () => body });
     if (url.startsWith("/api/granola/status")) return ok({ connected: true });
     if (url.startsWith("/api/granola/actions")) return ok(WORK);
     if (url.startsWith("/api/canvas/status")) return ok({ connected: false, mode: "none" });
     if (url.startsWith("/api/canvas/assignments")) return ok([]);
     if (url.startsWith("/api/todos/completed")) return ok([]);
-    if (url.startsWith("/api/todos/complete")) return ok({ ok: true });
+    if (url.startsWith("/api/todos/complete")) {
+      if (init?.method === "POST") state.postedComplete = true;
+      return ok({ ok: true });
+    }
     if (url.startsWith("/api/google/status")) return ok({ work: false, personal: false });
     if (url.startsWith("/api/google/events")) return ok({ blocks: [], allDay: [] });
     return ok({});
   });
   vi.stubGlobal("fetch", fn);
-  return fn;
+  return state;
 }
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("DashboardShell — clear to Completed archive", () => {
   it("clearing a Work item removes it from Active and shows it under Completed", async () => {
-    const fn = mockFetch();
+    const state = mockFetch();
     render(<DashboardShell />);
 
     const work = await screen.findByTestId("todo-section-work");
@@ -49,11 +53,7 @@ describe("DashboardShell — clear to Completed archive", () => {
       expect(within(work).queryByText("Send the roadmap")).toBeNull(),
     );
     // Persisted via POST.
-    expect(
-      fn.mock.calls.some(
-        (c) => c[0] === "/api/todos/complete" && c[1]?.method === "POST",
-      ),
-    ).toBe(true);
+    await waitFor(() => expect(state.postedComplete).toBe(true));
 
     // Appears under the Completed tab.
     await userEvent.click(screen.getByRole("tab", { name: /Completed/ }));
