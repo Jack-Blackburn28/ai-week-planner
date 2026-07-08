@@ -219,7 +219,7 @@ dates, overdue/soon emphasis, and a visual-only check toggle. Maps to spec Unit 
 - [x] 4.5 Write `components/TodoSection/TodoSection.test.tsx` covering the metadata
   rules, count badge, and overdue emphasis.
 
-### [ ] 5.0 Chat Bubble, Drawer & Mock Proposal Flow
+### [x] 5.0 Chat Bubble, Drawer & Mock Proposal Flow
 
 Floating bubble → right slide-in drawer (covers the todo column, calendar visible),
 placeholder echo, "Propose a plan" → dashed blocks + Approve / Make Changes wired to
@@ -238,20 +238,20 @@ the 2.0 logic. Maps to spec Unit 4.
 
 #### 5.0 Tasks
 
-- [ ] 5.1 Build `components/Chat/ChatBubble.tsx`: a floating corner button that toggles
+- [x] 5.1 Build `components/Chat/ChatBubble.tsx`: a floating corner button that toggles
   the drawer.
-- [ ] 5.2 Build `components/Chat/ChatDrawer.tsx`: right slide-in panel sized to the
+- [x] 5.2 Build `components/Chat/ChatDrawer.tsx`: right slide-in panel sized to the
   todo-column width (calendar stays visible), with an open/close animation and a close
   control.
-- [ ] 5.3 Add the message list + text input; sending appends the user message and a
+- [x] 5.3 Add the message list + text input; sending appends the user message and a
   canned placeholder assistant reply (no AI call).
-- [ ] 5.4 Add a "Propose a plan" button that loads the mock `Proposal` blocks onto the
+- [x] 5.4 Add a "Propose a plan" button that loads the mock `Proposal` blocks onto the
   calendar as `proposed` (dashed) and reveals Approve / Make Changes.
-- [ ] 5.5 Wire Approve → `approveProposal` (proposed→approved) + a confirmation message;
+- [x] 5.5 Wire Approve → `approveProposal` (proposed→approved) + a confirmation message;
   Make Changes → `discardProposal` (no commit) + return focus to the chat input.
-- [ ] 5.6 Guard that proposed blocks never overlap immovable blocks (assert via
+- [x] 5.6 Guard that proposed blocks never overlap immovable blocks (assert via
   `overlapsImmovable` on the mock proposal).
-- [ ] 5.7 Write `components/Chat/ChatDrawer.test.tsx` covering the echo reply, the
+- [x] 5.7 Write `components/Chat/ChatDrawer.test.tsx` covering the echo reply, the
   approve→approved conversion, and the make-changes→no-commit path.
 
 ### [ ] 6.0 Responsive/Mobile Layout, Legend & Polish
