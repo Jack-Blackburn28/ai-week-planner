@@ -189,7 +189,7 @@ colored by source. Maps to spec Unit 2.
 - [x] 3.7 Write `components/Calendar/Calendar.test.tsx` covering block positions, the
   dashed pending style, and config-window rendering.
 
-### [ ] 4.0 Work + School Todo Dashboard (right)
+### [x] 4.0 Work + School Todo Dashboard (right)
 
 Two Things3-style sections with count badges, one-line metadata, always-visible due
 dates, overdue/soon emphasis, and a visual-only check toggle. Maps to spec Unit 3.
@@ -206,17 +206,17 @@ dates, overdue/soon emphasis, and a visual-only check toggle. Maps to spec Unit 
 
 #### 4.0 Tasks
 
-- [ ] 4.1 Build `components/TodoSection/TodoSection.tsx`: section header with title +
+- [x] 4.1 Build `components/TodoSection/TodoSection.tsx`: section header with title +
   count badge (open items), Things3-style spacing/rounding.
-- [ ] 4.2 Build `components/TodoSection/TodoItem.tsx`: circular checkbox, title, one
+- [x] 4.2 Build `components/TodoSection/TodoItem.tsx`: circular checkbox, title, one
   metadata line (School: `course · due`; Work: `meeting · date`), always showing the
   date; add a helper to classify a due date as overdue / due-soon / normal and apply
   emphasis styling.
-- [ ] 4.3 Implement the check/uncheck toggle as local component state (visual only;
+- [x] 4.3 Implement the check/uncheck toggle as local component state (visual only;
   resets on refresh).
-- [ ] 4.4 Compose the stacked Work + School sections from `lib/mock-data.ts` in
+- [x] 4.4 Compose the stacked Work + School sections from `lib/mock-data.ts` in
   `DashboardShell`.
-- [ ] 4.5 Write `components/TodoSection/TodoSection.test.tsx` covering the metadata
+- [x] 4.5 Write `components/TodoSection/TodoSection.test.tsx` covering the metadata
   rules, count badge, and overdue emphasis.
 
 ### [ ] 5.0 Chat Bubble, Drawer & Mock Proposal Flow

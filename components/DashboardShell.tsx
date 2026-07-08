@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
-import type { CalendarBlock } from "@/lib/types";
-import { initialBlocks } from "@/lib/mock-data";
+import type { CalendarBlock, TodoItem } from "@/lib/types";
+import { initialBlocks, initialTodos } from "@/lib/mock-data";
 import { Brand } from "@/components/Brand";
 import { Calendar } from "@/components/Calendar/Calendar";
+import { TodoSection } from "@/components/TodoSection/TodoSection";
 
 // Client-only flag via useSyncExternalStore: returns false during SSR/hydration,
 // true once on the client. Lets us resolve `today` without a hydration mismatch
@@ -30,6 +31,12 @@ function useHydrated(): boolean {
 export function DashboardShell() {
   const hydrated = useHydrated();
   const [blocks] = useState<CalendarBlock[]>(initialBlocks);
+  const [todos, setTodos] = useState<TodoItem[]>(initialTodos);
+
+  const toggleTodo = (id: string) =>
+    setTodos((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
+    );
 
   if (!hydrated) {
     return (
@@ -53,11 +60,20 @@ export function DashboardShell() {
           <Calendar blocks={blocks} referenceDate={today} />
         </main>
 
-        {/* Right column — todo dashboard lands here in Task 4.0 */}
-        <aside className="hidden w-[360px] shrink-0 overflow-auto border-l border-hairline bg-panel p-4 md:block">
-          <p className="text-sm text-ink-soft">
-            Work &amp; School todos appear here.
-          </p>
+        {/* Right column — Work + School todo dashboard */}
+        <aside className="hidden w-[360px] shrink-0 flex-col gap-5 overflow-auto border-l border-hairline bg-panel p-4 md:flex">
+          <TodoSection
+            title="Work"
+            items={todos.filter((t) => t.section === "work")}
+            today={today}
+            onToggle={toggleTodo}
+          />
+          <TodoSection
+            title="School"
+            items={todos.filter((t) => t.section === "school")}
+            today={today}
+            onToggle={toggleTodo}
+          />
         </aside>
       </div>
     </div>
