@@ -122,7 +122,7 @@ Maps to spec Unit 1 (endpoint).
   Anthropic SDK (grep) and capture it as a proof artifact.
 - [x] 2.5 Run `npm run typecheck`, `npm run lint`, `npm test`; confirm green.
 
-### [ ] 3.0 Chat wired to the planner (UI)
+### [x] 3.0 Chat wired to the planner (UI)
 
 Replace the Story 1 scripted mock with real calls to `/api/plan`. Maps to spec Unit 2.
 
@@ -140,24 +140,24 @@ Replace the Story 1 scripted mock with real calls to `/api/plan`. Maps to spec U
 
 #### 3.0 Tasks
 
-- [ ] 3.1 Add a `toWeekState(blocks, todos)` helper (in `lib/planner`) that serializes
+- [x] 3.1 Add a `toWeekState(blocks, todos)` helper (in `lib/planner`) that serializes
   the current `DashboardShell` state into a `WeekState` for the request.
-- [ ] 3.2 Update `DashboardShell`: replace the scripted `handleSend`/`handlePropose` with
+- [x] 3.2 Update `DashboardShell`: replace the scripted `handleSend`/`handlePropose` with
   an async call to `POST /api/plan` (sending `messages` + `week`); add a `thinking`
   state; on success append the assistant `reply` and, if a `proposal` is returned, add its
   blocks to calendar state as `proposed`.
-- [ ] 3.3 Remove the hard-coded "Propose a plan" quick action (or repurpose it to send a
+- [x] 3.3 Remove the hard-coded "Propose a plan" quick action (or repurpose it to send a
   "Plan my week" message); keep Approve / Make changes wired to
   `approveProposal`/`discardProposal`.
-- [ ] 3.4 Update `components/Chat/ChatDrawer.tsx`: accept an `isThinking` prop, render a
+- [x] 3.4 Update `components/Chat/ChatDrawer.tsx`: accept an `isThinking` prop, render a
   typing/thinking indicator bubble, and disable the send control while awaiting.
-- [ ] 3.5 Add error handling: on a failed request, append a friendly assistant error
+- [x] 3.5 Add error handling: on a failed request, append a friendly assistant error
   message and leave calendar blocks unchanged (nothing committed).
-- [ ] 3.6 Extend `components/DashboardShell.test.tsx` (mock `global.fetch`): assert the
+- [x] 3.6 Extend `components/DashboardShell.test.tsx` (mock `global.fetch`): assert the
   request is sent with `week` + `messages`, the reply renders, proposed blocks appear,
   Approve commits, Make changes discards, and the error path shows a message without
   changing blocks.
-- [ ] 3.7 Run `npm run lint`, `npm run typecheck`, `npm test`; confirm green.
+- [x] 3.7 Run `npm run lint`, `npm run typecheck`, `npm test`; confirm green.
 
 ### [ ] 4.0 Mid-week replanning & conflict handling
 

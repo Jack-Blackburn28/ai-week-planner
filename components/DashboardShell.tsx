@@ -2,21 +2,19 @@
 
 import { useRef, useState, useSyncExternalStore } from "react";
 import type { CalendarBlock, ChatMessage, ChatRole, TodoItem } from "@/lib/types";
-import {
-  initialBlocks,
-  initialMessages,
-  initialTodos,
-  mockProposal,
-} from "@/lib/mock-data";
+import { initialBlocks, initialMessages, initialTodos } from "@/lib/mock-data";
 import { approveProposal, discardProposal } from "@/lib/planning";
+import { toCalendarBlocks } from "@/lib/planner/validate";
+import { toWeekState } from "@/lib/planner/week";
+import type { PlannerResponse } from "@/lib/planner/types";
 import { Brand } from "@/components/Brand";
 import { Calendar } from "@/components/Calendar/Calendar";
 import { TodoSection } from "@/components/TodoSection/TodoSection";
 import { ChatBubble } from "@/components/Chat/ChatBubble";
 import { ChatDrawer } from "@/components/Chat/ChatDrawer";
 
-const PLACEHOLDER_REPLY =
-  "Thanks! I'm a placeholder for now — in Story 2 I'll actually plan around your week. Tap “Propose a plan” to preview how proposals work.";
+const ERROR_REPLY =
+  "Sorry — I couldn't reach the planner just now. Please try again in a moment.";
 
 // Client-only flag via useSyncExternalStore: returns false during SSR/hydration,
 // true once on the client. Lets us resolve `today` without a hydration mismatch
@@ -46,30 +44,53 @@ export function DashboardShell() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [chatOpen, setChatOpen] = useState(false);
   const [mobileView, setMobileView] = useState<"calendar" | "todos">("calendar");
+  const [thinking, setThinking] = useState(false);
   const idRef = useRef(0);
 
   const hasProposal = blocks.some((b) => b.status === "proposed");
+  const nextId = () => `m${idRef.current++}`;
 
   const pushMessage = (role: ChatRole, text: string) =>
-    setMessages((prev) => [...prev, { id: `m${idRef.current++}`, role, text }]);
+    setMessages((prev) => [...prev, { id: nextId(), role, text }]);
 
   const toggleTodo = (id: string) =>
     setTodos((prev) =>
       prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
     );
 
-  const handleSend = (text: string) => {
-    pushMessage("user", text);
-    pushMessage("assistant", PLACEHOLDER_REPLY);
-  };
+  /** Send a message to the AI planner and apply its reply + proposal. */
+  const handleSend = async (text: string) => {
+    if (thinking) return;
+    const userMsg: ChatMessage = { id: nextId(), role: "user", text };
+    const conversation = [...messages, userMsg];
+    setMessages(conversation);
+    setThinking(true);
+    try {
+      const res = await fetch("/api/plan", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          messages: conversation,
+          week: toWeekState(blocks, todos),
+        }),
+      });
+      const data: PlannerResponse & { error?: string } = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "planner failed");
 
-  const handlePropose = () => {
-    if (hasProposal) return;
-    setBlocks((prev) => [...prev, ...mockProposal.blocks]);
-    pushMessage(
-      "assistant",
-      `${mockProposal.summary} I've penciled it onto your calendar (dashed) — Approve to keep it, or Make changes.`,
-    );
+      pushMessage("assistant", data.reply);
+      if (data.proposal && data.proposal.blocks.length > 0) {
+        const proposed = toCalendarBlocks(data.proposal.blocks);
+        // Replace any prior pending proposal with the new one.
+        setBlocks((prev) => [
+          ...prev.filter((b) => b.status !== "proposed"),
+          ...proposed,
+        ]);
+      }
+    } catch {
+      pushMessage("assistant", ERROR_REPLY);
+    } finally {
+      setThinking(false);
+    }
   };
 
   const handleApprove = () => {
@@ -158,9 +179,10 @@ export function DashboardShell() {
         open={chatOpen}
         messages={messages}
         hasProposal={hasProposal}
+        isThinking={thinking}
         onClose={() => setChatOpen(false)}
         onSend={handleSend}
-        onPropose={handlePropose}
+        onPropose={() => handleSend("Plan my week")}
         onApprove={handleApprove}
         onMakeChanges={handleMakeChanges}
       />

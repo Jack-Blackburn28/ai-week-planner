@@ -45,7 +45,7 @@ describe("ChatDrawer", () => {
   it("shows the Propose button (not the action bar) with no proposal", () => {
     const props = setup({ hasProposal: false });
     expect(screen.queryByTestId("proposal-actions")).not.toBeInTheDocument();
-    userEvent.click(screen.getByRole("button", { name: /Propose a plan/ }));
+    userEvent.click(screen.getByRole("button", { name: /Plan my week/ }));
     expect(props.onPropose).toBeDefined();
   });
 
@@ -54,7 +54,7 @@ describe("ChatDrawer", () => {
     expect(screen.getByTestId("proposal-actions")).toBeInTheDocument();
     // Propose button is hidden while a proposal is active.
     expect(
-      screen.queryByRole("button", { name: /Propose a plan/ }),
+      screen.queryByRole("button", { name: /Plan my week/ }),
     ).not.toBeInTheDocument();
 
     await userEvent.click(screen.getByRole("button", { name: "Approve" }));

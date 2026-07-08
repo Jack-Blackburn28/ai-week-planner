@@ -8,6 +8,8 @@ interface ChatDrawerProps {
   messages: ChatMessage[];
   /** True while a proposal is pending review (dashed blocks on the calendar). */
   hasProposal: boolean;
+  /** True while awaiting a planner response — shows a thinking indicator. */
+  isThinking?: boolean;
   onClose: () => void;
   onSend: (text: string) => void;
   onPropose: () => void;
@@ -24,6 +26,7 @@ export function ChatDrawer({
   open,
   messages,
   hasProposal,
+  isThinking = false,
   onClose,
   onSend,
   onPropose,
@@ -33,6 +36,7 @@ export function ChatDrawer({
   const [draft, setDraft] = useState("");
 
   const send = () => {
+    if (isThinking) return;
     const text = draft.trim();
     if (!text) return;
     onSend(text);
@@ -80,6 +84,18 @@ export function ChatDrawer({
             </p>
           </div>
         ))}
+        {isThinking && (
+          <div data-testid="thinking" className="flex justify-start">
+            <p
+              aria-label="Planner is thinking"
+              className="flex items-center gap-1 rounded-2xl bg-surface px-3 py-2 text-ink-soft"
+            >
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-soft [animation-delay:-0.2s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-soft [animation-delay:-0.1s]" />
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-soft" />
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Proposal action bar */}
@@ -121,14 +137,16 @@ export function ChatDrawer({
               }
             }}
             rows={1}
+            disabled={isThinking}
             placeholder="Tell the planner what you need…"
             aria-label="Message the planner"
-            className="min-h-[38px] flex-1 resize-none rounded-lg border border-hairline bg-panel px-3 py-2 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
+            className="min-h-[38px] flex-1 resize-none rounded-lg border border-hairline bg-panel px-3 py-2 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-work-ring disabled:opacity-50"
           />
           <button
             type="button"
             onClick={send}
-            className="rounded-lg bg-work px-3 py-2 text-sm font-medium text-white hover:opacity-90"
+            disabled={isThinking}
+            className="rounded-lg bg-work px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
           >
             Send
           </button>
@@ -137,9 +155,10 @@ export function ChatDrawer({
           <button
             type="button"
             onClick={onPropose}
-            className="mt-2 rounded-full border border-work/40 bg-work-soft px-3 py-1 text-xs font-medium text-work hover:opacity-90"
+            disabled={isThinking}
+            className="mt-2 rounded-full border border-work/40 bg-work-soft px-3 py-1 text-xs font-medium text-work hover:opacity-90 disabled:opacity-50"
           >
-            ✦ Propose a plan
+            ✦ Plan my week
           </button>
         )}
       </div>
