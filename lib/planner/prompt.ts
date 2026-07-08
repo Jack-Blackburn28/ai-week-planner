@@ -35,7 +35,10 @@ export function serializeWeek(week: WeekState): string {
     .filter((b) => !b.immovable && b.status === "approved")
     .map(fmt);
   const todos = week.todos.map(
-    (t) => `[${t.section}] ${t.title} (${t.metaLabel}, due ${t.dueDate})`,
+    (t) =>
+      `[${t.section}] ${t.title} (${t.metaLabel}, ${
+        t.dueDate ? `due ${t.dueDate}` : "no due date"
+      })`,
   );
 
   return [

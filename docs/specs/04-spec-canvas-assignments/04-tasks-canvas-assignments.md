@@ -82,7 +82,7 @@ secret, the ⚙︎ Settings status row, and setup docs. (Spec Unit 1.)
 - [x] 1.7 Ran lint + typecheck + Canvas tests (green); captured the status-row
   screenshot in mock mode. Commit below.
 
-### [ ] 2.0 Fetch, parse & map assignments → School todos (data layer)
+### [x] 2.0 Fetch, parse & map assignments → School todos (data layer)
 
 Fetch from the selected source and map to School `TodoItem`s: Canvas API path (course +
 `due_at` + submission state, paginated) and the ICS fallback. Apply the scope filter and
@@ -102,25 +102,24 @@ submission→done, relax `TodoItem.dueDate` to optional, and expose it via
 
 #### 2.0 Tasks
 
-- [ ] 2.1 Relax `TodoItem.dueDate` to optional in `lib/types.ts`; audit consumers
-  (`serializeWeek`, `TodoItem.tsx`, `mock-data.ts`, existing tests) and adjust
-  `lib/date.ts` (or the component) to handle an absent due date without throwing.
-- [ ] 2.2 Choose + add an ICS-parsing dependency (confirm current API via context7);
-  record the choice in a one-line note in `docs/canvas-setup.md`.
-- [ ] 2.3 Add `lib/canvas/ics.ts` parsing an ICS string → raw assignment shapes; commit a
-  small sanitized `lib/canvas/fixtures/sample.ics`; write `lib/canvas/ics.test.ts`.
-- [ ] 2.4 Add `lib/canvas/map.ts` (pure): raw assignment → School `TodoItem`
-  (course → `metaLabel`, `due_at` → local `YYYY-MM-DD` via `lib/date.ts`,
-  submitted/graded → `done`, undated → no `dueDate`); implement the scope filter
-  (current-term, due-future OR overdue ≤ ~14d, plus undated). Write `lib/canvas/map.test.ts`.
-- [ ] 2.5 Add `lib/canvas/client.ts` (`CanvasClient` interface + real token impl with
-  `Link`-header pagination + `resolveClient()`), `lib/canvas/client.mock.ts`, and
-  `lib/canvas/demoSeed.ts` (incl. a submitted + an undated sample).
-- [ ] 2.6 Add `app/api/canvas/assignments/route.ts`: resolve source → fetch → map → return
-  `TodoItem[]`; not-connected → `[]`. Handle fetch failure gracefully (log server-side,
-  return `[]`).
-- [ ] 2.7 Run the quality gates; capture the `curl …/assignments` JSON. Commit
-  `feat: Canvas assignment fetch + mapping + ICS fallback (T2.0, Spec 04)`.
+- [x] 2.1 Relaxed `TodoItem.dueDate` to optional in `lib/types.ts`; audited consumers —
+  guarded `serializeWeek` ("no due date") and `TodoItem.tsx` ("No due date" render);
+  `mock-data.ts` unaffected. Full suite stays green.
+- [x] 2.2 Chose + added `ical.js@^2` (confirmed via context7 — pure-JS, better fit than
+  `node-ical`); recorded the choice in `docs/canvas-setup.md`.
+- [x] 2.3 Added `lib/canvas/ics.ts` (defensive parse → raw assignments), sanitized
+  `lib/canvas/fixtures/sample.ics`, and `lib/canvas/ics.test.ts` (incl. course-tag
+  extraction + unparseable input).
+- [x] 2.4 Added `lib/canvas/map.ts` (course→metaLabel, `due_at`→local date,
+  submitted/graded→`done`, undated→no `dueDate`; scope filter future OR overdue ≤14d,
+  always keep undated) + `lib/canvas/map.test.ts`.
+- [x] 2.5 Added `lib/canvas/client.ts` (`CanvasClient` interface + real token client with
+  `Link`-header pagination + ICS client + `resolveClient()`), `client.mock.ts`, and
+  `demoSeed.ts` (submitted + undated samples).
+- [x] 2.6 Added `app/api/canvas/assignments/route.ts`: resolve → fetch → map → `TodoItem[]`;
+  fails soft to `[]` on error / not-connected.
+- [x] 2.7 Ran the full gates (122 tests green); captured the `curl …/assignments` JSON.
+  Commit below.
 
 ### [ ] 3.0 Render real assignments in the School section + refresh
 

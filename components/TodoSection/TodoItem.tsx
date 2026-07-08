@@ -14,8 +14,12 @@ interface TodoItemProps {
 }
 
 export function TodoItem({ item, today, onToggle }: TodoItemProps) {
-  const due = classifyDue(item.dueDate, today);
-  const dueLabel = formatDueLabel(item.dueDate, today);
+  // Canvas assignments (Story 4) may have no due date — show a muted "No due
+  // date" label and skip the overdue/soon emphasis.
+  const due: DueStatus = item.dueDate ? classifyDue(item.dueDate, today) : "normal";
+  const dueLabel = item.dueDate
+    ? formatDueLabel(item.dueDate, today)
+    : "No due date";
 
   return (
     <li className="flex items-start gap-3 rounded-lg px-2 py-2 hover:bg-surface">

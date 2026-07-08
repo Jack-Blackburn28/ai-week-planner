@@ -53,8 +53,12 @@ export interface TodoItem {
   title: string;
   /** The one-line context: source meeting (Work) or course (School). */
   metaLabel: string;
-  /** ISO date (YYYY-MM-DD). Every item always has a due date. */
-  dueDate: string;
+  /**
+   * ISO date (YYYY-MM-DD). Optional since Story 4: real Canvas assignments may
+   * have no due date, in which case the UI shows "No due date" and the item is
+   * simply checkable. Work items and most School items still carry one.
+   */
+  dueDate?: string;
   done: boolean;
 }
 
