@@ -12,6 +12,7 @@ import { Calendar } from "@/components/Calendar/Calendar";
 import { TodoSection } from "@/components/TodoSection/TodoSection";
 import { ChatBubble } from "@/components/Chat/ChatBubble";
 import { ChatDrawer } from "@/components/Chat/ChatDrawer";
+import { GoogleConnect } from "@/components/Settings/GoogleConnect";
 
 const ERROR_REPLY =
   "Sorry — I couldn't reach the planner just now. Please try again in a moment.";
@@ -43,6 +44,7 @@ export function DashboardShell() {
   const [todos, setTodos] = useState<TodoItem[]>(initialTodos);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [chatOpen, setChatOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileView, setMobileView] = useState<"calendar" | "todos">("calendar");
   const [thinking, setThinking] = useState(false);
   const idRef = useRef(0);
@@ -117,28 +119,38 @@ export function DashboardShell() {
     <div className="flex h-dvh flex-col bg-surface">
       <header className="flex items-center justify-between border-b border-hairline bg-panel px-4 py-3">
         <Brand />
-        {/* Mobile-only view switcher (side-by-side on desktop) */}
-        <div
-          role="tablist"
-          aria-label="Switch view"
-          className="flex rounded-lg border border-hairline bg-surface p-0.5 text-sm md:hidden"
-        >
-          {(["calendar", "todos"] as const).map((view) => (
-            <button
-              key={view}
-              type="button"
-              role="tab"
-              aria-selected={mobileView === view}
-              onClick={() => setMobileView(view)}
-              className={`rounded-md px-3 py-1 font-medium capitalize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring ${
-                mobileView === view
-                  ? "bg-panel text-ink shadow-sm"
-                  : "text-ink-soft"
-              }`}
-            >
-              {view === "todos" ? "Todos" : "Calendar"}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          {/* Mobile-only view switcher (side-by-side on desktop) */}
+          <div
+            role="tablist"
+            aria-label="Switch view"
+            className="flex rounded-lg border border-hairline bg-surface p-0.5 text-sm md:hidden"
+          >
+            {(["calendar", "todos"] as const).map((view) => (
+              <button
+                key={view}
+                type="button"
+                role="tab"
+                aria-selected={mobileView === view}
+                onClick={() => setMobileView(view)}
+                className={`rounded-md px-3 py-1 font-medium capitalize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring ${
+                  mobileView === view
+                    ? "bg-panel text-ink shadow-sm"
+                    : "text-ink-soft"
+                }`}
+              >
+                {view === "todos" ? "Todos" : "Calendar"}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            aria-label="Settings"
+            onClick={() => setSettingsOpen(true)}
+            className="rounded-md border border-hairline bg-surface px-2.5 py-1.5 text-sm text-ink-soft hover:bg-panel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
+          >
+            ⚙︎
+          </button>
         </div>
       </header>
 
@@ -172,6 +184,34 @@ export function DashboardShell() {
           />
         </aside>
       </div>
+
+      {/* Settings drawer — Google account connections (+ calendar mapping) */}
+      {settingsOpen && (
+        <div
+          className="fixed inset-0 z-40 flex justify-end bg-black/30"
+          onClick={() => setSettingsOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-label="Settings"
+            className="flex h-full w-full max-w-sm flex-col gap-4 overflow-auto bg-panel p-5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-ink">Settings</h2>
+              <button
+                type="button"
+                aria-label="Close settings"
+                onClick={() => setSettingsOpen(false)}
+                className="rounded-md border border-hairline px-2 py-1 text-sm text-ink-soft hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
+              >
+                ✕
+              </button>
+            </div>
+            <GoogleConnect />
+          </div>
+        </div>
+      )}
 
       {/* Chat — the only way to interact with the planner */}
       <ChatBubble open={chatOpen} onClick={() => setChatOpen((o) => !o)} />

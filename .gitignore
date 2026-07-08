@@ -27,6 +27,10 @@ yarn-error.log*
 .env.*
 !.env.example
 
+# Google integration: encrypted tokens + calendar mapping (never commit)
+.tokens.json
+.google-config.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

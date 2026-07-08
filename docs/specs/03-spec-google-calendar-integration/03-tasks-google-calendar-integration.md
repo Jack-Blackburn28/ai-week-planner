@@ -67,7 +67,7 @@
 
 ## Tasks
 
-### [ ] 1.0 Google OAuth foundation + encrypted token store (connect both accounts)
+### [x] 1.0 Google OAuth foundation + encrypted token store (connect both accounts)
 
 Adds the app's own server-side Google OAuth for the Work (read-only) and Personal
 (read+write) accounts, persists refresh tokens encrypted at rest, exposes connection
@@ -83,16 +83,16 @@ status/disconnect, and ships a reproducible Google Cloud setup guide. Maps to Sp
 
 #### 1.0 Tasks
 
-- [ ] 1.1 Add `googleapis` to `package.json` dependencies and install (`npm install googleapis`).
-- [ ] 1.2 Define `lib/google/types.ts`: `GoogleAccount = "work" | "personal"`, stored-token shape, `TokenStore` state, and OAuth scope constants (`calendar.readonly` for work; full `calendar` for personal).
-- [ ] 1.3 Implement `lib/google/auth.ts`: build the OAuth2 client from `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_REDIRECT_URI`; `getAuthUrl(account)` with `access_type=offline`, `prompt=consent`, per-account scopes; `exchangeCode(account, code)`. Server-only.
-- [ ] 1.4 Write `lib/google/auth.test.ts`: work gets read-only scope, personal gets full scope; auth URL includes offline + consent params.
-- [ ] 1.5 Implement `lib/google/tokenStore.ts`: AES-GCM encrypt/decrypt with a key derived from `TOKEN_ENC_SECRET`; read/write `.tokens.json`; `saveToken`, `getToken`, `status()`, `disconnect(account)`; tolerate missing/corrupt file.
-- [ ] 1.6 Write `lib/google/tokenStore.test.ts`: encrypt→decrypt round-trip; missing file → empty status; malformed file handled; disconnect clears one account only.
-- [ ] 1.7 Add API routes: `connect/[account]` (redirect to auth URL), `callback/[account]` (exchange code, save token, redirect home), `status` (booleans only), `disconnect/[account]`.
-- [ ] 1.8 Write `app/api/google/status.test.ts`: asserts the payload exposes only connection booleans (no `refresh_token`/secret fields).
-- [ ] 1.9 Build `components/Settings/GoogleConnect.tsx` (connect buttons + live status from `/api/google/status`) and surface it from `DashboardShell` (e.g. a settings affordance). Client component; no SDK import.
-- [ ] 1.10 Update `.env.example` (new secret names) and `.gitignore` (`.tokens.json`, `.google-config.json`); write `docs/google-calendar-setup.md` (OAuth client, redirect URIs, scopes, **In production** consent-screen step to avoid 7-day token expiry).
+- [x] 1.1 Add `googleapis` to `package.json` dependencies and install (`npm install googleapis`). — installed v173.0.0.
+- [x] 1.2 Define `lib/google/types.ts`: `GoogleAccount`, `StoredToken`, `ConnectionStatus`, `GOOGLE_SCOPES` (readonly for work; full for personal), `isGoogleAccount` guard.
+- [x] 1.3 Implement `lib/google/auth.ts`: `oauthClient()`, `getAuthUrl(account)` (`access_type=offline`, `prompt=consent`, per-account scope, `state=account`), `exchangeCode(code)`. Server-only.
+- [x] 1.4 Write `lib/google/auth.test.ts`: work=read-only scope, personal=full scope; auth URL has offline + consent + state.
+- [x] 1.5 Implement `lib/google/tokenStore.ts`: AES-256-GCM encrypt/decrypt (key from `TOKEN_ENC_SECRET`); read/write gitignored `.tokens.json`; `saveToken`/`getToken`/`status`/`disconnect`; tolerates missing/corrupt file; `createTokenStore` factory for tests.
+- [x] 1.6 Write `lib/google/tokenStore.test.ts`: round-trip; ciphertext-on-disk; missing/malformed file; disconnect clears one account; file removed when empty.
+- [x] 1.7 Add API routes: `connect/[account]` (redirect to auth URL), `callback` (single route; reads `state` for the account, exchanges code, saves token, redirects home), `status` (booleans only), `disconnect/[account]`. _(Refinement: one registered redirect URI + `state` instead of `callback/[account]`.)_
+- [x] 1.8 Write `app/api/google/status.test.ts`: payload exposes only booleans; seeded token is not echoed.
+- [x] 1.9 Build `components/Settings/GoogleConnect.tsx` (connect/disconnect + live status) and surface it from `DashboardShell` via a ⚙︎ Settings drawer. Client component; no SDK import. Test: `GoogleConnect.test.tsx`.
+- [x] 1.10 Update `.env.example` (Google secret names) and `.gitignore` (`.tokens.json`, `.google-config.json`); write `docs/google-calendar-setup.md` (OAuth client, redirect URI, scopes, **In production** consent screen).
 
 ### [ ] 2.0 Calendar mapping + auto-created "AI Calendar" (choose work/personal sources)
 
