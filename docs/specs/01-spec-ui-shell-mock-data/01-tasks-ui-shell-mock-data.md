@@ -58,7 +58,7 @@ the types, mock data, and pure logic delivered in 2.0.
 
 ## Tasks
 
-### [ ] 1.0 Project Scaffold & AI-Native Repository Foundation
+### [x] 1.0 Project Scaffold & AI-Native Repository Foundation
 
 Establishes the buildable Next.js + TypeScript + Tailwind v4 app and the repo
 conventions every later story relies on. Maps to spec Unit 1.
@@ -79,33 +79,33 @@ conventions every later story relies on. Maps to spec Unit 1.
 
 #### 1.0 Tasks
 
-- [ ] 1.1 Initialize a Next.js App Router + TypeScript project in the repo root
+- [x] 1.1 Initialize a Next.js App Router + TypeScript project in the repo root
   (`app/` dir, `tsconfig.json` with `strict`, `moduleResolution: "bundler"`, and the
   `@/*` path alias; `next.config.ts`).
-- [ ] 1.2 Install and configure Tailwind CSS v4: add `tailwindcss`,
+- [x] 1.2 Install and configure Tailwind CSS v4: add `tailwindcss`,
   `@tailwindcss/postcss`, `postcss`; create `postcss.config.mjs` with the
   `@tailwindcss/postcss` plugin; set `app/globals.css` to `@import "tailwindcss";` and
   define `@theme` tokens for the work/school/personal source colors.
-- [ ] 1.3 Add npm scripts: `dev`, `build`, `start`, `lint`, `typecheck`
+- [x] 1.3 Add npm scripts: `dev`, `build`, `start`, `lint`, `typecheck`
   (`tsc --noEmit`), and `test` (`vitest run`).
-- [ ] 1.4 Configure ESLint (`eslint.config.mjs`, Next core-web-vitals + TypeScript) and
+- [x] 1.4 Configure ESLint (`eslint.config.mjs`, Next core-web-vitals + TypeScript) and
   confirm `npm run lint` and `npm run typecheck` pass on the scaffold.
-- [ ] 1.5 Set up Vitest + React Testing Library (`vitest.config.ts` with jsdom env +
+- [x] 1.5 Set up Vitest + React Testing Library (`vitest.config.ts` with jsdom env +
   React plugin, `vitest.setup.ts` importing `@testing-library/jest-dom`) and add one
   passing example smoke test.
-- [ ] 1.6 Add a Next.js-appropriate `.gitignore` (`node_modules`, `.next`, `.env*`,
+- [x] 1.6 Add a Next.js-appropriate `.gitignore` (`node_modules`, `.next`, `.env*`,
   `coverage`, build output).
-- [ ] 1.7 Install Husky and add a `.husky/pre-commit` hook that runs
+- [x] 1.7 Install Husky and add a `.husky/pre-commit` hook that runs
   `npm run lint && npm run typecheck && npm test`; verify it blocks a commit when a
   check fails.
-- [ ] 1.8 Write `AGENTS.md` (project overview, folder structure, how to run/dev/test,
+- [x] 1.8 Write `AGENTS.md` (project overview, folder structure, how to run/dev/test,
   conventions, story roadmap) and create `CLAUDE.md` as a symlink to it
   (`ln -s AGENTS.md CLAUDE.md`).
-- [ ] 1.9 Write `README.md` (what the app is, prerequisites, install/run/test commands,
+- [x] 1.9 Write `README.md` (what the app is, prerequisites, install/run/test commands,
   links to `docs/` and `docs/specs/`).
-- [ ] 1.10 Write steering docs: `docs/product-vision.md`, `docs/architecture.md`,
+- [x] 1.10 Write steering docs: `docs/product-vision.md`, `docs/architecture.md`,
   `docs/conventions.md`, reflecting the confirmed vision and this spec.
-- [ ] 1.11 Render a minimal placeholder page and confirm a clean boot (no console
+- [x] 1.11 Render a minimal placeholder page and confirm a clean boot (no console
   errors); capture the boot proof artifacts.
 
 ### [ ] 2.0 Domain Types, Mock Data & Pure Planning Logic (`lib/`)

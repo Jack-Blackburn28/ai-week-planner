@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens (Tailwind v4 CSS-first config).
+ * Colors are keyed BY SOURCE — the app's core color language:
+ *   work     = blue    (work hours + meetings)
+ *   school   = purple  (class + homework)
+ *   personal = green   (gym / golf / errands)
+ * Each source has a strong color (solid/approved blocks, accents) and a
+ * soft tint (block fills, chips). Utilities like `bg-work`, `text-school`,
+ * `border-personal` are generated automatically from these tokens.
+ */
+@theme {
+  --color-work: #2563eb;
+  --color-work-soft: #dbeafe;
+  --color-work-ring: #93c5fd;
+
+  --color-school: #7c3aed;
+  --color-school-soft: #ede9fe;
+  --color-school-ring: #c4b5fd;
+
+  --color-personal: #059669;
+  --color-personal-soft: #d1fae5;
+  --color-personal-ring: #6ee7b7;
+
+  --color-surface: #f7f7f5;
+  --color-panel: #ffffff;
+  --color-ink: #1c1c1e;
+  --color-ink-soft: #6b7280;
+  --color-hairline: #e5e7eb;
+
+  --color-danger: #dc2626;
+  --color-warn: #d97706;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
