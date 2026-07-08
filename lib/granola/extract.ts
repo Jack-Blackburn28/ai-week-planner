@@ -13,7 +13,9 @@ import { z } from "zod";
 import { mockExtract } from "./extract.mock";
 import type { ExtractedActionItem, GranolaTranscript } from "./types";
 
-const MODEL = "claude-sonnet-5";
+// Haiku is plenty capable for pulling action items from a transcript, at a much
+// lower per-meeting cost than Sonnet.
+const MODEL = "claude-haiku-4-5-20251001";
 // Generous cap: a busy meeting can yield many action items, and the structured
 // JSON must not be truncated mid-string (that fails parsing → the meeting yields
 // nothing). 1024 was too tight for long transcripts.
