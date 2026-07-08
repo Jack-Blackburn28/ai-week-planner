@@ -101,7 +101,11 @@ export function GoogleConnect() {
           }
         }
         if (active) {
-          setCalendars(cals);
+          // Be defensive: only accept array-shaped calendar lists.
+          setCalendars({
+            work: Array.isArray(cals.work) ? cals.work : [],
+            personal: Array.isArray(cals.personal) ? cals.personal : [],
+          });
           setAssign(next);
         }
       } catch {
@@ -199,10 +203,10 @@ export function GoogleConnect() {
                 <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">
                   {label}
                 </p>
-                {calendars[key].length === 0 && (
+                {(calendars[key] ?? []).length === 0 && (
                   <p className="text-xs text-ink-soft">No calendars found.</p>
                 )}
-                {calendars[key].map((c) => (
+                {(calendars[key] ?? []).map((c) => (
                   <label
                     key={c.id}
                     className="flex items-center justify-between gap-2 rounded-md border border-hairline bg-panel px-2.5 py-1.5"
