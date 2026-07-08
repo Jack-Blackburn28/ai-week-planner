@@ -1,27 +1,18 @@
 "use client";
 
 /**
- * Granola status panel: connect once (OAuth) or disconnect. After connecting, the
- * app auto-refreshes the access token forever — Jack never touches it again. The
- * app's AI reads meeting transcripts and generates the Work action items.
+ * Granola status panel: shows whether Granola is connected via its personal API
+ * key. There is no in-app connect button — the key (`grn_…`, from Granola →
+ * Settings → Connectors → API keys) is configured via `.env.local`, so the
+ * credential never touches the browser. See `docs/granola-setup.md`.
  *
- * Client component — never imports any Granola SDK/network code. Connecting is a
- * full navigation to `/api/granola/connect`, which server-redirects to Granola.
+ * Client component — only reads the `/api/granola/status` boolean payload.
  */
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { GranolaStatus } from "@/lib/granola/types";
 
 export function GranolaConnect() {
   const [status, setStatus] = useState<GranolaStatus | null>(null);
-
-  const refresh = useCallback(async () => {
-    try {
-      const res = await fetch("/api/granola/status");
-      if (res.ok) setStatus((await res.json()) as GranolaStatus);
-    } catch {
-      /* leave prior status */
-    }
-  }, []);
 
   useEffect(() => {
     let active = true;
@@ -31,7 +22,7 @@ export function GranolaConnect() {
         const data = res.ok ? ((await res.json()) as GranolaStatus) : null;
         if (active && data) setStatus(data);
       } catch {
-        /* ignore */
+        /* leave prior status */
       }
     })();
     return () => {
@@ -41,18 +32,14 @@ export function GranolaConnect() {
 
   const connected = status?.connected ?? false;
 
-  const disconnect = async () => {
-    await fetch("/api/granola/disconnect", { method: "POST" });
-    void refresh();
-  };
-
   return (
     <section aria-label="Granola" className="flex flex-col gap-3">
       <div>
         <h3 className="text-sm font-semibold text-ink">Granola</h3>
         <p className="text-xs text-ink-soft">
-          Connect once — the app reads your meeting transcripts and its AI generates
-          your Work action items. Auto-refreshes, so you never reconnect.
+          Your meeting transcripts feed the Work list — the AI reads them and
+          generates your action items. Add a Granola API key to{" "}
+          <code>.env.local</code> — see docs/granola-setup.md.
         </p>
       </div>
 
@@ -61,31 +48,14 @@ export function GranolaConnect() {
           <p className="truncate text-sm font-medium text-ink">Meetings</p>
           <p className="text-xs text-ink-soft">Read-only</p>
         </div>
-        {connected ? (
-          <div className="flex items-center gap-2">
-            <span
-              data-testid="granola-status"
-              className="rounded-full bg-personal-soft px-2 py-0.5 text-[11px] font-medium text-personal"
-            >
-              Connected
-            </span>
-            <button
-              type="button"
-              onClick={disconnect}
-              className="rounded-md border border-hairline px-2 py-1 text-xs text-ink-soft hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
-            >
-              Disconnect
-            </button>
-          </div>
-        ) : (
-          <a
-            data-testid="granola-connect"
-            href="/api/granola/connect"
-            className="rounded-md bg-work px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring"
-          >
-            Connect
-          </a>
-        )}
+        <span
+          data-testid="granola-status"
+          className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+            connected ? "bg-personal-soft text-personal" : "bg-surface text-ink-soft"
+          }`}
+        >
+          {connected ? "Connected via API key" : "Not connected"}
+        </span>
       </div>
     </section>
   );

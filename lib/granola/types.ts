@@ -4,17 +4,12 @@
  * `auth.ts` / `client.ts` / `extract.ts`). Mirrors `lib/google/types.ts`.
  */
 
-/** Connection status reported to the client. Never carries token material. */
+/** Connection status reported to the client. Never carries the API key. */
 export interface GranolaStatus {
   connected: boolean;
 }
 
-/** What we persist: only the long-lived refresh token (access tokens are ephemeral). */
-export interface StoredGranolaToken {
-  refresh_token: string;
-}
-
-/** A meeting as returned by Granola (only the fields we use). */
+/** A meeting/note as returned by Granola (only the fields we use). */
 export interface GranolaMeeting {
   id: string;
   title: string;

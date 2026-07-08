@@ -1,82 +1,98 @@
 /**
- * Granola client: lists recent meetings and fetches transcripts. SERVER-ONLY
- * (network + token). Mirrors the Google/Canvas boundary: an interface + a real
- * implementation + a `resolveClient()` that swaps in the demo fake when
- * `GRANOLA_MOCK=1`.
+ * Granola client: lists recent notes (meetings) and fetches transcripts from the
+ * personal API. SERVER-ONLY (network + key). Mirrors the Google/Canvas boundary:
+ * an interface + a real implementation + a `resolveClient()` that swaps in the
+ * demo fake when `GRANOLA_MOCK=1`.
  *
- * The real client mints a fresh access token from the stored refresh token on
- * each call (rotating the stored refresh token if Granola returns a new one), so
- * the user connects once and never reconnects. Endpoint paths are env-overridable.
+ * Real API (https://public-api.granola.ai/v1, Bearer `grn_…`):
+ *   GET /notes?created_after=<ISO>&cursor=<...>   → { notes[], hasMore, cursor }
+ *   GET /notes/{id}?include=transcript            → { ..., transcript[] }
+ * The API only returns notes that have a generated AI summary + transcript.
  */
-import { refreshAccessToken } from "./auth";
-import { isMockMode } from "./config";
+import { getGranolaConfig, isMockMode } from "./config";
 import { createMockClient } from "./client.mock";
 import { demoSeed } from "./demoSeed";
-import { granolaTokenStore } from "./tokenStore";
 import type { GranolaMeeting, GranolaTranscript } from "./types";
 
 export interface GranolaClient {
-  /** Recent meetings within the last `days`. */
+  /** Recent notes/meetings within the last `days`. */
   listRecentMeetings(days: number): Promise<GranolaMeeting[]>;
-  /** Full transcript for a meeting, or null if unavailable. */
+  /** Full transcript for a note, or null if unavailable. */
   getTranscript(meetingId: string): Promise<GranolaTranscript | null>;
 }
 
-const API_BASE = process.env.GRANOLA_API_BASE ?? "https://api.granola.ai/v1";
+// --- Granola personal API shapes (only the fields we read) -------------------
 
-// --- Real API client ---------------------------------------------------------
-
-interface RawMeeting {
+interface RawNote {
   id: string;
   title?: string;
-  name?: string;
   created_at?: string;
-  date?: string;
+  created?: string;
+}
+interface RawNotesPage {
+  notes?: RawNote[];
+  hasMore?: boolean;
+  cursor?: string | null;
+}
+interface RawTranscriptTurn {
+  speaker?: { source?: string; diarization_label?: string };
+  text?: string;
+}
+interface RawNoteDetail {
+  id: string;
+  title?: string;
+  created_at?: string;
+  transcript?: RawTranscriptTurn[];
 }
 
 function realClient(): GranolaClient {
-  /** Mint a fresh access token, rotating the stored refresh token if rotated. */
-  async function accessToken(): Promise<string> {
-    const stored = granolaTokenStore.get();
-    if (!stored) throw new Error("Granola not connected");
-    const tokens = await refreshAccessToken(stored.refresh_token);
-    if (tokens.refresh_token) {
-      granolaTokenStore.save({ refresh_token: tokens.refresh_token });
-    }
-    return tokens.access_token;
-  }
-
-  async function authedGet<T>(path: string): Promise<T> {
-    const token = await accessToken();
-    const res = await fetch(`${API_BASE}${path}`, {
-      headers: { Authorization: `Bearer ${token}` },
+  const authedGet = async <T>(path: string): Promise<T> => {
+    const { apiKey, baseUrl } = getGranolaConfig();
+    const res = await fetch(`${baseUrl}${path}`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
     });
     if (!res.ok) throw new Error(`Granola API ${res.status} for ${path}`);
     return (await res.json()) as T;
-  }
+  };
 
   return {
     async listRecentMeetings(days) {
       const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-      const data = await authedGet<{ meetings?: RawMeeting[] }>(
-        `/meetings?since=${encodeURIComponent(since)}`,
-      );
-      return (data.meetings ?? []).map((m) => ({
-        id: m.id,
-        title: m.title ?? m.name ?? "Untitled meeting",
-        date: m.created_at ?? m.date ?? since,
-      }));
+      const out: GranolaMeeting[] = [];
+      let cursor: string | null | undefined;
+      // Paginate via the cursor until hasMore is false.
+      do {
+        const q = new URLSearchParams({ created_after: since });
+        if (cursor) q.set("cursor", cursor);
+        const page: RawNotesPage = await authedGet(`/notes?${q.toString()}`);
+        for (const n of page.notes ?? []) {
+          out.push({
+            id: n.id,
+            title: n.title ?? "Untitled meeting",
+            date: n.created_at ?? n.created ?? since,
+          });
+        }
+        cursor = page.hasMore ? page.cursor : null;
+      } while (cursor);
+      return out;
     },
+
     async getTranscript(meetingId) {
-      const data = await authedGet<{ transcript?: string; title?: string; date?: string }>(
-        `/meetings/${encodeURIComponent(meetingId)}/transcript`,
+      const note: RawNoteDetail = await authedGet(
+        `/notes/${encodeURIComponent(meetingId)}?include=transcript`,
       );
-      if (!data.transcript) return null;
+      const turns = note.transcript ?? [];
+      if (turns.length === 0) return null;
+      const text = turns
+        .map((t) => t.text?.trim())
+        .filter((t): t is string => Boolean(t))
+        .join("\n");
+      if (!text) return null;
       return {
         meetingId,
-        title: data.title ?? "Meeting",
-        date: data.date ?? new Date().toISOString(),
-        text: data.transcript,
+        title: note.title ?? "Meeting",
+        date: note.created_at ?? new Date().toISOString(),
+        text,
       };
     },
   };

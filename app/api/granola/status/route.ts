@@ -1,15 +1,15 @@
 /**
  * GET /api/granola/status — Granola connection status. Returns ONLY `{ connected }`;
- * the refresh token never leaves the server.
+ * the API key never leaves the server. Connected = a `GRANOLA_API_KEY` is set
+ * (or demo mode).
  */
 import { NextResponse } from "next/server";
-import { isMockMode } from "@/lib/granola/config";
-import { granolaTokenStore } from "@/lib/granola/tokenStore";
+import { isGranolaConfigured, isMockMode } from "@/lib/granola/config";
 import type { GranolaStatus } from "@/lib/granola/types";
 
 export async function GET() {
   if (isMockMode()) {
     return NextResponse.json<GranolaStatus>({ connected: true });
   }
-  return NextResponse.json<GranolaStatus>(granolaTokenStore.status());
+  return NextResponse.json<GranolaStatus>({ connected: isGranolaConfigured() });
 }
