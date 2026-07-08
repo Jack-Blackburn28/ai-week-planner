@@ -34,13 +34,21 @@
 
 ```
 app/                 Next.js App Router (layout.tsx, page.tsx, globals.css)
+app/api/plan/        POST /api/plan — server-side AI planner route (Story 2)
 components/           React UI components (Calendar/, TodoSection/, Chat/, ...)
 lib/                  Framework-free logic: types, config, mock data, planning rules
+lib/planner/          The AI planner: config, prompt, schema, validation, mock, server
 docs/                Steering docs (this project's "why" and "how")
 docs/specs/          Spec-Driven Development artifacts (specs, tasks, audits, proofs)
 ```
 
 Import with the `@/*` alias (e.g. `import { Brand } from "@/components/Brand"`).
+
+**AI planner boundary:** the Anthropic SDK and `ANTHROPIC_API_KEY` are used ONLY in
+`lib/planner/server.ts` (imported by the `app/api/plan` route) — never from a
+`"use client"` component. Without a key, `runPlanner` falls back to `lib/planner/mock.ts`
+so the app still runs. The server always re-validates AI proposals against immovable
+blocks (`lib/planner/validate.ts`) — AI output is untrusted.
 
 ## Commands
 

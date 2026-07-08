@@ -109,4 +109,50 @@ describe("POST /api/plan", () => {
     expect(json.error).toBeTruthy();
     expect(JSON.stringify(json)).not.toContain("sk-");
   });
+
+  it("returns a clarifying reply with NO proposal on a conflict (mock path)", async () => {
+    delete process.env.ANTHROPIC_API_KEY;
+    const res = await post({
+      messages: [{ id: "1", role: "user", text: "put gym during work on Monday" }],
+      week: { blocks: [workMon], todos: [] },
+    });
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.proposal).toBeUndefined();
+    expect(json.reply).toBeTruthy();
+  });
+
+  it("never returns a proposal overlapping any immovable block (bad AI output)", async () => {
+    process.env.ANTHROPIC_API_KEY = "sk-test-REDACTED";
+    // A second immovable block: Tuesday class 6:00–7:30 PM.
+    const classTue: CalendarBlock = {
+      id: "class-tue",
+      title: "HIST 202",
+      source: "school",
+      status: "approved",
+      day: 1,
+      startMinutes: 18 * 60,
+      endMinutes: 19 * 60 + 30,
+      immovable: true,
+    };
+    parseMock.mockResolvedValue({
+      parsed_output: {
+        reply: "Draft.",
+        proposal: {
+          summary: "Deliberately bad output.",
+          blocks: [
+            { title: "Over work", source: "personal", day: 0, startMinutes: 600, endMinutes: 660 },
+            { title: "Over class", source: "school", day: 1, startMinutes: 18 * 60 + 15, endMinutes: 18 * 60 + 45 },
+            { title: "Free", source: "personal", day: 0, startMinutes: 1080, endMinutes: 1140 },
+          ],
+        },
+      },
+    });
+
+    const res = await post({ messages, week: { blocks: [workMon, classTue], todos: [] } });
+    const json = await res.json();
+    // Only the free-space block survives; nothing overlaps an immovable block.
+    expect(json.proposal.blocks).toHaveLength(1);
+    expect(json.proposal.blocks[0].title).toBe("Free");
+  });
 });

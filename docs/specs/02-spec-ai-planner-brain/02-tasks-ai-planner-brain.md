@@ -159,7 +159,7 @@ Replace the Story 1 scripted mock with real calls to `/api/plan`. Maps to spec U
   changing blocks.
 - [x] 3.7 Run `npm run lint`, `npm run typecheck`, `npm test`; confirm green.
 
-### [ ] 4.0 Mid-week replanning & conflict handling
+### [x] 4.0 Mid-week replanning & conflict handling
 
 Prove the two trust behaviors and lock in the never-overlap guarantee. Maps to spec
 Unit 3.
@@ -178,16 +178,16 @@ Unit 3.
 
 #### 4.0 Tasks
 
-- [ ] 4.1 Make `mockPlanner` support a deterministic replanning response (a follow-up
+- [x] 4.1 Make `mockPlanner` support a deterministic replanning response (a follow-up
   mentioning a day/keyword produces an updated proposal reflecting the change), so the
   replanning screenshot/test is meaningful.
-- [ ] 4.2 Ensure the conflict path renders correctly in the UI: a clarifying reply appears
+- [x] 4.2 Ensure the conflict path renders correctly in the UI: a clarifying reply appears
   with **no** dashed blocks added until a fitting proposal is produced.
-- [ ] 4.3 Add a conflict test: an unfittable request → `PlannerResponse` with a clarifying
+- [x] 4.3 Add a conflict test: an unfittable request → `PlannerResponse` with a clarifying
   `reply` and empty/absent `proposal`.
-- [ ] 4.4 Add a never-overlap test: given a deliberately bad mocked AI structured output
+- [x] 4.4 Add a never-overlap test: given a deliberately bad mocked AI structured output
   (blocks overlapping several immovable blocks), assert `runPlanner`/the route returns a
   proposal with zero immovable-overlapping blocks.
-- [ ] 4.5 Capture the replanning + conflict screenshots (mock planner).
-- [ ] 4.6 Update `docs/architecture.md` and `AGENTS.md` to document `app/api/plan` and the
+- [x] 4.5 Capture the replanning + conflict screenshots (mock planner).
+- [x] 4.6 Update `docs/architecture.md` and `AGENTS.md` to document `app/api/plan` and the
   `lib/planner` module; run all gates + `npm run build`; confirm green.

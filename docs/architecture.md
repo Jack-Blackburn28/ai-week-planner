@@ -54,6 +54,26 @@ reuses them instead of reinventing them:
 - `approveProposal(blocks)` / `discardProposal(blocks)` — enforce "approval before
   commit" (proposed → approved) and the Make-Changes (discard) path.
 
+## AI planner (Story 2)
+
+The chat is wired to a server-side planner:
+
+- **`app/api/plan` (Route Handler)** — receives `{ messages, week }`, calls
+  `runPlanner`, returns `{ reply, proposal? }`.
+- **`lib/planner/server.ts`** — the ONLY module that imports the Anthropic SDK and reads
+  `ANTHROPIC_API_KEY`. With a key it calls `claude-sonnet-5` (config in
+  `lib/planner/config.ts`) using structured outputs; without a key it uses the
+  deterministic `lib/planner/mock.ts` so the app runs keyless.
+- **Untrusted AI output** — every proposed block is re-validated with
+  `overlapsImmovable` (`lib/planner/validate.ts`) before being returned, so the "never
+  schedule over an immovable block" rule holds regardless of the model.
+- **Client** — `DashboardShell` POSTs the week + conversation, shows a thinking
+  indicator, renders the reply, and maps a returned proposal to `proposed` blocks; the
+  Story 1 `approveProposal`/`discardProposal` logic commits or discards them.
+
+Prompt/serialization/validation/mock are pure functions in `lib/planner/`, unit-tested
+without the network (the SDK is mocked in tests).
+
 ## Calendar time window
 
 The visible time window is a **single config value** (`lib/config.ts`, default
