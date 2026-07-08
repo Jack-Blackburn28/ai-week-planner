@@ -22,12 +22,21 @@ function toDueDate(dueAt: string | null): string | undefined {
   return isoDate(d);
 }
 
-/** Whether an assignment falls inside the displayed scope window. */
-export function inScope(assignment: CanvasAssignment, today: Date): boolean {
+/**
+ * Whether an assignment falls inside the displayed scope window.
+ * `overdueWindowDays` = how many days a past-due item stays visible. The ICS feed
+ * carries no submission status, so we can't tell done from truly-late — the feed
+ * path passes 0 (upcoming-only). The token path (which knows submission state)
+ * keeps a 14-day overdue window.
+ */
+export function inScope(
+  assignment: CanvasAssignment,
+  today: Date,
+  overdueWindowDays: number = OVERDUE_WINDOW_DAYS,
+): boolean {
   const due = toDueDate(assignment.dueAt);
   if (!due) return true; // undated → always included (just checkable)
-  // Keep everything due today-or-later, and overdue items within the window.
-  return daysUntil(due, today) >= -OVERDUE_WINDOW_DAYS;
+  return daysUntil(due, today) >= -overdueWindowDays;
 }
 
 /** Map one raw assignment to a School todo. Submitted/graded → done. */
@@ -46,8 +55,9 @@ export function mapAssignmentToTodo(assignment: CanvasAssignment): TodoItem {
 export function mapAssignments(
   assignments: CanvasAssignment[],
   today: Date,
+  overdueWindowDays: number = OVERDUE_WINDOW_DAYS,
 ): TodoItem[] {
   return assignments
-    .filter((a) => inScope(a, today))
+    .filter((a) => inScope(a, today, overdueWindowDays))
     .map((a) => mapAssignmentToTodo(a));
 }

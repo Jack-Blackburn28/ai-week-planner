@@ -66,4 +66,17 @@ describe("inScope / mapAssignments (scope filter)", () => {
     expect(inScope(undated, today)).toBe(true);
     expect(mapAssignments([undated], today)).toHaveLength(1);
   });
+
+  it("upcoming-only (overdue window 0) drops all past-due, keeps future + undated", () => {
+    const future = make({ id: "f", dueAt: noon("2026-07-20") });
+    const overdue = make({ id: "o", dueAt: noon("2026-07-01") }); // any past date
+    const undated = make({ id: "u", dueAt: null });
+
+    expect(inScope(overdue, today, 0)).toBe(false);
+    expect(inScope(future, today, 0)).toBe(true);
+    expect(inScope(undated, today, 0)).toBe(true);
+
+    const todos = mapAssignments([future, overdue, undated], today, 0);
+    expect(todos.map((t) => t.id)).toEqual(["canvas-f", "canvas-u"]);
+  });
 });

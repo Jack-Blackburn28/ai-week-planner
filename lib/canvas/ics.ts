@@ -17,9 +17,18 @@ import type { CanvasAssignment } from "./types";
  * prefix the course in brackets, e.g. "Essay: Cold War [HIST 202]" — pull that
  * out as the course label when present.
  */
+/**
+ * Turn Canvas's raw section code into a friendly label:
+ * "2263-CHEM-311-01-33416" → "CHEM 311". Falls back to the raw value.
+ */
+function prettifyCourse(raw: string): string {
+  const m = raw.match(/([A-Za-z]{2,})[-\s]?(\d{2,4})/);
+  return m ? `${m[1].toUpperCase()} ${m[2]}` : raw.trim();
+}
+
 function splitTitleAndCourse(summary: string): { title: string; courseName: string } {
   const match = summary.match(/^(.*?)\s*\[([^\]]+)\]\s*$/);
-  if (match) return { title: match[1].trim(), courseName: match[2].trim() };
+  if (match) return { title: match[1].trim(), courseName: prettifyCourse(match[2]) };
   return { title: summary.trim(), courseName: "" };
 }
 
