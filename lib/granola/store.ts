@@ -55,15 +55,22 @@ export const granolaStore = createGranolaStore();
 /** Extractor signature (real AI or mock) — injected so `syncActions` stays testable. */
 export type Extract = (t: GranolaTranscript) => Promise<ExtractedActionItem[]>;
 
+/** Normalize an action-item title for duplicate detection. */
+export function normalizeTitle(title: string): string {
+  return title.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
 export interface SyncOpts {
   store: GranolaStore;
   client: GranolaClient;
   extract: Extract;
   /** Ids the user has cleared — never returned, never regenerated. */
   completedIds: Set<string>;
+  /** Normalized titles of cleared items — never recreated (cross-meeting dedup). */
+  completedTitles?: Set<string>;
   /** ISO timestamp for newly-created records (injected for determinism). */
   now: string;
-  /** Recency window in days (default 30). */
+  /** Recency window in days (default 7 — last week). */
   windowDays?: number;
 }
 
@@ -73,14 +80,60 @@ export interface SyncOpts {
  * Already-processed meetings are skipped entirely — `extract` is not called for
  * them — which is what makes generation stable and clearing permanent.
  */
-export async function syncActions(opts: SyncOpts): Promise<GranolaActionRecord[]> {
-  const { store, client, extract, completedIds, now, windowDays = 30 } = opts;
+/**
+ * In-process lock: serialize concurrent syncActions calls (e.g. the app's mount
+ * fetch + a manual refresh hitting the route at once) so they don't race on the
+ * file store and create duplicate items. Shared via globalThis because Next dev
+ * isolates route modules.
+ */
+function withGranolaLock<T>(fn: () => Promise<T>): Promise<T> {
+  const holder = globalThis as unknown as { __awpGranolaLock?: Promise<unknown> };
+  const prev = holder.__awpGranolaLock ?? Promise.resolve();
+  const run = prev.then(fn, fn);
+  holder.__awpGranolaLock = run.catch(() => undefined);
+  return run;
+}
+
+export function syncActions(opts: SyncOpts): Promise<GranolaActionRecord[]> {
+  return withGranolaLock(() => syncActionsUnlocked(opts));
+}
+
+async function syncActionsUnlocked(
+  opts: SyncOpts,
+): Promise<GranolaActionRecord[]> {
+  const {
+    store,
+    client,
+    extract,
+    completedIds,
+    completedTitles = new Set(),
+    now,
+    windowDays = 7,
+  } = opts;
   const data = store.read();
+  let changed = false;
+
+  // Clean any duplicate items a prior concurrent write may have left (by id or
+  // normalized title), so the list self-heals and never renders duplicate keys.
+  const seenId = new Set<string>();
+  const seenTitle = new Set<string>();
+  const cleaned = data.items.filter((i) => {
+    const t = normalizeTitle(i.title);
+    if (seenId.has(i.id) || seenTitle.has(t)) return false;
+    seenId.add(i.id);
+    seenTitle.add(t);
+    return true;
+  });
+  if (cleaned.length !== data.items.length) {
+    data.items = cleaned;
+    changed = true;
+  }
+
   const processed = new Set(data.processedMeetingIds);
   const existingIds = new Set(data.items.map((i) => i.id));
+  const existingTitles = new Set(data.items.map((i) => normalizeTitle(i.title)));
 
   const meetings = await client.listRecentMeetings(windowDays);
-  let changed = false;
 
   for (const meeting of meetings) {
     if (processed.has(meeting.id)) continue; // GENERATE ONCE
@@ -89,10 +142,20 @@ export async function syncActions(opts: SyncOpts): Promise<GranolaActionRecord[]
       if (transcript) {
         const records = buildActionRecords(meeting, await extract(transcript), now);
         for (const rec of records) {
-          // Skip anything already known or already cleared (NEVER REGENERATE).
-          if (existingIds.has(rec.id) || completedIds.has(rec.id)) continue;
+          const title = normalizeTitle(rec.title);
+          // Skip anything already known, already cleared (by id or text), or a
+          // duplicate of an item we already have (NEVER REGENERATE + no dup text).
+          if (
+            existingIds.has(rec.id) ||
+            completedIds.has(rec.id) ||
+            existingTitles.has(title) ||
+            completedTitles.has(title)
+          ) {
+            continue;
+          }
           data.items.push(rec);
           existingIds.add(rec.id);
+          existingTitles.add(title);
         }
       }
     } catch (err) {

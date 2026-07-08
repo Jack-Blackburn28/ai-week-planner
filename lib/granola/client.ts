@@ -42,6 +42,7 @@ interface RawNoteDetail {
   id: string;
   title?: string;
   created_at?: string;
+  owner?: { name?: string; email?: string };
   transcript?: RawTranscriptTurn[];
 }
 
@@ -83,9 +84,20 @@ function realClient(): GranolaClient {
       );
       const turns = note.transcript ?? [];
       if (turns.length === 0) return null;
+      // Label each turn so the AI can attribute action items: Granola marks the
+      // owner's own mic as "microphone" and everyone else as "speaker".
+      const ownerName = note.owner?.name || "Me";
       const text = turns
-        .map((t) => t.text?.trim())
-        .filter((t): t is string => Boolean(t))
+        .map((t) => {
+          const body = t.text?.trim();
+          if (!body) return "";
+          const who =
+            t.speaker?.source === "microphone"
+              ? ownerName
+              : t.speaker?.diarization_label || "Others";
+          return `${who}: ${body}`;
+        })
+        .filter(Boolean)
         .join("\n");
       if (!text) return null;
       return {
@@ -93,6 +105,7 @@ function realClient(): GranolaClient {
         title: note.title ?? "Meeting",
         date: note.created_at ?? new Date().toISOString(),
         text,
+        owner: note.owner,
       };
     },
   };

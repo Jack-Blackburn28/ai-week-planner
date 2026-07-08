@@ -23,13 +23,23 @@ const extractionSchema = z.object({
   items: z.array(z.object({ title: z.string() })),
 });
 
-const SYSTEM_PROMPT = [
-  "You extract action items from a meeting transcript.",
-  "Return ONLY concrete, actionable follow-ups that Jack himself should do.",
-  "Each item is a short imperative phrase (e.g. 'Send the Q3 roadmap draft').",
-  "Ignore chit-chat, decisions with no owner, and items clearly owned by others.",
-  "If there are no clear action items for Jack, return an empty list.",
-].join("\n");
+function systemPrompt(owner?: { name?: string; email?: string }): string {
+  const who = owner?.name || owner?.email || "the note owner";
+  const email = owner?.email ? ` (${owner.email})` : "";
+  return [
+    `You extract action items from a meeting transcript for ${who}${email}.`,
+    `The transcript is speaker-labeled; "${who}" is the person we extract FOR.`,
+    `Return ONLY tasks that ${who} personally committed to or was explicitly`,
+    "  assigned. Include an item ONLY if the transcript makes clear it is THIS",
+    `  person's responsibility (they said "I'll…", or were assigned it by name).`,
+    "STRICTLY EXCLUDE: anything owned by other people, group decisions with no",
+    "  clear owner, vague musings ('we should maybe…'), and FYI/status updates.",
+    "Some meetings (retros, standups, listen-only calls) legitimately have ZERO",
+    `  action items for ${who} — in that case return an empty list. NEVER invent`,
+    "  or pad items to fill space.",
+    "Each item is a short imperative phrase (e.g. 'Send the Q3 roadmap draft').",
+  ].join("\n");
+}
 
 export function hasApiKey(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY);
@@ -43,7 +53,7 @@ async function aiExtract(
     const message = await client.messages.parse({
       model: MODEL,
       max_tokens: MAX_TOKENS,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt(transcript.owner),
       messages: [
         {
           role: "user",

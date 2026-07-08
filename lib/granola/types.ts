@@ -22,8 +22,10 @@ export interface GranolaTranscript {
   meetingId: string;
   title: string;
   date: string;
-  /** The raw transcript text. */
+  /** The transcript text (speaker-labeled so the AI can attribute action items). */
   text: string;
+  /** The note owner — the person we extract action items FOR (i.e. Jack). */
+  owner?: { name?: string; email?: string };
 }
 
 /** One AI-extracted action item (before it becomes a Work TodoItem). */

@@ -11,17 +11,19 @@ import { NextResponse } from "next/server";
 import { resolveClient } from "@/lib/granola/client";
 import { extractActionItems } from "@/lib/granola/extract";
 import { recordToTodo } from "@/lib/granola/map";
-import { granolaStore, syncActions } from "@/lib/granola/store";
+import { granolaStore, normalizeTitle, syncActions } from "@/lib/granola/store";
 import { completionsStore } from "@/lib/todos/completions";
 import type { TodoItem } from "@/lib/types";
 
 export async function GET() {
   try {
+    const completed = completionsStore.list();
     const open = await syncActions({
       store: granolaStore,
       client: resolveClient(),
       extract: extractActionItems,
-      completedIds: completionsStore.ids(),
+      completedIds: new Set(completed.map((c) => c.id)),
+      completedTitles: new Set(completed.map((c) => normalizeTitle(c.title))),
       now: new Date().toISOString(),
     });
     return NextResponse.json<TodoItem[]>(open.map(recordToTodo));
