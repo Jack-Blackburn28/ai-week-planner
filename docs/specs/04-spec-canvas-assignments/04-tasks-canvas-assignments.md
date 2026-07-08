@@ -151,7 +151,7 @@ Work section stays mock. (Spec Unit 2 UI + Unit 3 refresh.)
 - [x] 3.6 Ran the gates (125 tests green); captured 3 screenshots (populated, undated,
   empty state). Commit below.
 
-### [ ] 4.0 Planner deadline awareness
+### [x] 4.0 Planner deadline awareness
 
 Ensure real School items flow into `WeekState.todos` (via `toWeekState`) and strengthen
 the planner system prompt so the AI treats School items as real deadlines — prioritizing
@@ -169,14 +169,13 @@ never committing without approval. (Spec Unit 3, planner.)
 
 #### 4.0 Tasks
 
-- [ ] 4.1 Confirm the Canvas-sourced school todos flow through `toWeekState` /
-  `serializeWeek` unchanged (they already do via `DashboardShell`'s `todos`); adjust
-  `serializeWeek` to render undated items sensibly ("no due date").
-- [ ] 4.2 Strengthen `buildSystemPrompt()` in `lib/planner/prompt.ts`: add that School
-  items are real deadlines, to prioritize soonest-due/overdue, and to warn when a request
-  can't fit before a deadline — without changing the never-overlap / propose-only-on-
-  request / approval-required rules.
-- [ ] 4.3 Update `lib/planner/prompt.test.ts`: assert the new guidance is present; confirm
-  existing assertions still hold.
-- [ ] 4.4 Run the full quality gates; capture the planning-chat screenshot (mock planner
-  is fine). Commit `feat: planner deadline awareness for Canvas due dates (T4.0, Spec 04)`.
+- [x] 4.1 Canvas school todos flow through `toWeekState`/`serializeWeek` via
+  `DashboardShell`'s `allTodos`; `serializeWeek` now renders undated items as "no due
+  date" (landed in T2.1, asserted by a new test here).
+- [x] 4.2 Strengthened `buildSystemPrompt()`: School items are real deadlines, prioritize
+  soonest-due/overdue, warn when a request can't fit before a deadline — core rules
+  (never-overlap, propose-on-request, approval) unchanged.
+- [x] 4.3 Updated `lib/planner/prompt.test.ts`: asserts the new deadline guidance +
+  rules-intact, plus an undated-serialization test.
+- [x] 4.4 Ran the full gates (127 tests green); captured the planning-chat screenshot
+  (offline mock planner; deadline guidance is unit-test-verified). Commit below.
