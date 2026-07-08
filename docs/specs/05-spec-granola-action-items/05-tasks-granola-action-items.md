@@ -76,7 +76,7 @@ endpoint that never leaks the token, a Settings status row, and setup docs. (Uni
 - [x] 1.6 `.env.example` + `.gitignore` entries + `docs/granola-setup.md`.
 - [x] 1.7 Gates; screenshot; commit `feat: Granola OAuth foundation + status (T1.0, Spec 05)`.
 
-### [ ] 2.0 Transcripts → AI-extracted action items
+### [x] 2.0 Transcripts → AI-extracted action items
 
 Fetch recent meetings + transcripts behind a `GranolaClient` interface, and extract
 action items from each transcript with the Anthropic API (mock fallback). (Unit 2.)
@@ -90,14 +90,14 @@ action items from each transcript with the Anthropic API (mock fallback). (Unit 
 
 #### 2.0 Tasks
 
-- [ ] 2.1 `lib/granola/client.ts` (`GranolaClient` interface: `listRecentMeetings(days)`,
+- [x] 2.1 `lib/granola/client.ts` (`GranolaClient` interface: `listRecentMeetings(days)`,
   `getTranscript(id)`; real impl using `auth` refresh + fetch; `resolveClient()`),
   `client.mock.ts`, `demoSeed.ts` (fabricated meetings + transcripts).
-- [ ] 2.2 `lib/granola/extract.ts` (server-only Anthropic call, zod action-item schema,
+- [x] 2.2 `lib/granola/extract.ts` (server-only Anthropic call, zod action-item schema,
   `claude-sonnet-5`) + `extract.mock.ts` (deterministic) + `extract.test.ts`.
-- [ ] 2.3 Mapping: extracted action item → Work `TodoItem` (stable id
+- [x] 2.3 Mapping: extracted action item → Work `TodoItem` (stable id
   `granola-<meetingId>-<n>`, title, `metaLabel` = meeting title, no due date).
-- [ ] 2.4 Gates; capture `curl …/actions` JSON; (route completed with persistence in
+- [x] 2.4 Gates; capture `curl …/actions` JSON; (route completed with persistence in
   T3, but a minimal actions route returning mapped items proves extraction here).
 
 ### [ ] 3.0 Persistence — generate-once, never-regenerate, cleared-permanent
