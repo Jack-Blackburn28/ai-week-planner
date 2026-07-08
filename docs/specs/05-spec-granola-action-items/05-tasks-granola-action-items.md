@@ -126,7 +126,7 @@ items never come back. Wire the Work list to persisted items. (Unit 3.)
 - [x] 3.4 Gates; screenshot; commit
   `feat: Granola action-item persistence + Work list (T3.0, Spec 05)`.
 
-### [ ] 4.0 Combined Active | Completed archive (Work + School)
+### [x] 4.0 Combined Active | Completed archive (Work + School)
 
 Clearing any item moves it to a persisted, source-agnostic Completed store; add the
 `Active | Completed` dashboard toggle showing both sources most-recent-first. (Unit 4.)
@@ -140,14 +140,14 @@ Clearing any item moves it to a persisted, source-agnostic Completed store; add 
 
 #### 4.0 Tasks
 
-- [ ] 4.1 `lib/todos/completions.ts` (gitignored `.completions.json`: append, list-desc,
+- [x] 4.1 `lib/todos/completions.ts` (gitignored `.completions.json`: append, list-desc,
   `activeFilter`) + `completions.test.ts`.
-- [ ] 4.2 Routes: `app/api/todos/complete` (POST → append; remove from Granola open
+- [x] 4.2 Routes: `app/api/todos/complete` (POST → append; remove from Granola open
   items) + `app/api/todos/completed` (GET → sorted list).
-- [ ] 4.3 `components/CompletedView.tsx` + `Active | Completed` toggle in `DashboardShell`;
+- [x] 4.3 `components/CompletedView.tsx` + `Active | Completed` toggle in `DashboardShell`;
   clearing a Work/School item posts to `/api/todos/complete` and drops it from active.
-- [ ] 4.4 Active lists (Work + School) exclude completed ids on load.
-- [ ] 4.5 Gates; 2 screenshots; commit
+- [x] 4.4 Active lists (Work + School) exclude completed ids on load.
+- [x] 4.5 Gates; 2 screenshots; commit
   `feat: combined Active|Completed archive across Work+School (T4.0, Spec 05)`.
 
 ### [ ] 5.0 Independent-scroll layout + planner integration

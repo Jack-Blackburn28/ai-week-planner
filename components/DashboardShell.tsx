@@ -23,6 +23,8 @@ import { ChatDrawer } from "@/components/Chat/ChatDrawer";
 import { GoogleConnect } from "@/components/Settings/GoogleConnect";
 import { CanvasConnect } from "@/components/Settings/CanvasConnect";
 import { GranolaConnect } from "@/components/Settings/GranolaConnect";
+import { CompletedView } from "@/components/CompletedView";
+import type { CompletedItem } from "@/lib/todos/completions";
 
 const ERROR_REPLY =
   "Sorry — I couldn't reach the planner just now. Please try again in a moment.";
@@ -63,6 +65,8 @@ export function DashboardShell() {
   const [schoolTodos, setSchoolTodos] = useState<TodoItem[]>([]);
   const [canvasConnected, setCanvasConnected] = useState<boolean | null>(null);
   const [granolaConnected, setGranolaConnected] = useState<boolean | null>(null);
+  const [completedItems, setCompletedItems] = useState<CompletedItem[]>([]);
+  const [todoView, setTodoView] = useState<"active" | "completed">("active");
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [chatOpen, setChatOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -74,11 +78,37 @@ export function DashboardShell() {
     () => [...googleBlocks, ...blocks],
     [googleBlocks, blocks],
   );
+  // Completed ids exclude cleared items from the active lists (and the planner).
+  const completedIds = useMemo(
+    () => new Set(completedItems.map((i) => i.id)),
+    [completedItems],
+  );
+  const activeWork = useMemo(
+    () => workTodos.filter((t) => !completedIds.has(t.id)),
+    [workTodos, completedIds],
+  );
+  const activeSchool = useMemo(
+    () => schoolTodos.filter((t) => !completedIds.has(t.id)),
+    [schoolTodos, completedIds],
+  );
   const allTodos = useMemo(
-    () => [...workTodos, ...schoolTodos],
-    [workTodos, schoolTodos],
+    () => [...activeWork, ...activeSchool],
+    [activeWork, activeSchool],
   );
   const hasProposal = blocks.some((b) => b.status === "proposed");
+
+  // Load the combined Completed archive (Work + School), most-recent-first.
+  const fetchCompleted = useCallback(async () => {
+    try {
+      const res = await fetch("/api/todos/completed");
+      if (res.ok) {
+        const items = (await res.json()) as CompletedItem[];
+        setCompletedItems(Array.isArray(items) ? items : []);
+      }
+    } catch {
+      /* leave prior completed */
+    }
+  }, []);
 
   // Pull Work action items from Granola (status drives the empty state).
   const fetchActions = useCallback(async () => {
@@ -169,6 +199,12 @@ export function DashboardShell() {
     })();
   }, [fetchActions]);
 
+  useEffect(() => {
+    void (async () => {
+      await fetchCompleted();
+    })();
+  }, [fetchCompleted]);
+
   // Fetch events for the displayed week (on mount and whenever the week changes).
   // setState runs only after the fetch resolves, guarded against unmount.
   useEffect(() => {
@@ -202,11 +238,38 @@ export function DashboardShell() {
   const pushMessage = (role: ChatRole, text: string) =>
     setMessages((prev) => [...prev, { id: nextId(), role, text }]);
 
-  const toggleTodo = (id: string) => {
-    const flip = (list: TodoItem[]) =>
-      list.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
-    setWorkTodos(flip);
-    setSchoolTodos(flip);
+  // Clearing an item = complete it: it leaves the active list, is remembered
+  // (persisted) so it never regenerates, and appears in the Completed archive.
+  const completeTodo = (id: string) => {
+    const item = [...workTodos, ...schoolTodos].find((t) => t.id === id);
+    if (!item) return;
+    // Optimistic: drop from active + add to the Completed archive immediately.
+    setCompletedItems((prev) =>
+      prev.some((c) => c.id === id)
+        ? prev
+        : [
+            {
+              id,
+              source: item.section,
+              title: item.title,
+              metaLabel: item.metaLabel,
+              completedAt: new Date().toISOString(),
+            },
+            ...prev,
+          ],
+    );
+    void fetch("/api/todos/complete", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        id,
+        source: item.section,
+        title: item.title,
+        metaLabel: item.metaLabel,
+      }),
+    }).catch(() => {
+      /* optimistic state already updated; a later refresh reconciles */
+    });
   };
 
   /** Send a message to the AI planner and apply its reply + proposal. */
@@ -359,6 +422,7 @@ export function DashboardShell() {
               void fetchEvents(weekOffset);
               void fetchAssignments();
               void fetchActions();
+              void fetchCompleted();
             }}
             loading={googleLoading}
           />
@@ -366,15 +430,48 @@ export function DashboardShell() {
 
         {/* Right column — Work + School todo dashboard */}
         <aside
-          className={`w-full shrink-0 flex-col gap-5 overflow-auto border-l border-hairline bg-panel p-4 md:flex md:w-[360px] ${
+          className={`w-full shrink-0 flex-col gap-3 overflow-hidden border-l border-hairline bg-panel p-4 md:flex md:w-[360px] ${
             mobileView === "todos" ? "flex" : "hidden"
           }`}
         >
+          {/* Active | Completed toggle */}
+          <div
+            role="tablist"
+            aria-label="Todo view"
+            className="flex shrink-0 rounded-lg border border-hairline bg-surface p-0.5 text-sm"
+          >
+            {(["active", "completed"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={todoView === v}
+                onClick={() => setTodoView(v)}
+                className={`flex-1 rounded-md px-3 py-1 font-medium capitalize focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-work-ring ${
+                  todoView === v ? "bg-panel text-ink shadow-sm" : "text-ink-soft"
+                }`}
+              >
+                {v === "active"
+                  ? "Active"
+                  : `Completed${completedItems.length ? ` (${completedItems.length})` : ""}`}
+              </button>
+            ))}
+          </div>
+
+          {todoView === "completed" ? (
+            <section
+              aria-label="Completed"
+              className="flex min-h-0 flex-1 flex-col overflow-auto"
+            >
+              <CompletedView items={completedItems} />
+            </section>
+          ) : (
+            <>
           <TodoSection
             title="Work"
-            items={workTodos}
+            items={activeWork}
             today={today}
-            onToggle={toggleTodo}
+            onToggle={completeTodo}
             emptyState={
               granolaConnected === false ? (
                 <div className="flex items-center justify-between gap-3 rounded-lg border border-hairline bg-surface px-3 py-2 text-sm">
@@ -394,9 +491,9 @@ export function DashboardShell() {
           />
           <TodoSection
             title="School"
-            items={schoolTodos}
+            items={activeSchool}
             today={today}
-            onToggle={toggleTodo}
+            onToggle={completeTodo}
             emptyState={
               canvasConnected === false ? (
                 <div className="flex items-center justify-between gap-3 rounded-lg border border-hairline bg-surface px-3 py-2 text-sm">
@@ -414,6 +511,8 @@ export function DashboardShell() {
               ) : undefined
             }
           />
+            </>
+          )}
         </aside>
       </div>
 
