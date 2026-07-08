@@ -31,6 +31,11 @@ yarn-error.log*
 .tokens.json
 .google-config.json
 
+# Granola integration + todo state: encrypted token + persisted stores (never commit)
+.granola-tokens.json
+.granola-store.json
+.completions.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

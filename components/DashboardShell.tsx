@@ -22,6 +22,7 @@ import { ChatBubble } from "@/components/Chat/ChatBubble";
 import { ChatDrawer } from "@/components/Chat/ChatDrawer";
 import { GoogleConnect } from "@/components/Settings/GoogleConnect";
 import { CanvasConnect } from "@/components/Settings/CanvasConnect";
+import { GranolaConnect } from "@/components/Settings/GranolaConnect";
 
 const ERROR_REPLY =
   "Sorry — I couldn't reach the planner just now. Please try again in a moment.";
@@ -400,6 +401,8 @@ export function DashboardShell() {
             <GoogleConnect />
             <div className="h-px bg-hairline" />
             <CanvasConnect />
+            <div className="h-px bg-hairline" />
+            <GranolaConnect />
           </div>
         </div>
       )}

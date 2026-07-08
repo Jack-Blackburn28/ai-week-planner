@@ -50,7 +50,7 @@ by `app/api/granola/*`); the Anthropic SDK stays server-side (reuses the
 
 ## Tasks
 
-### [ ] 1.0 Granola connection (OAuth connect-once + auto-refresh) + status
+### [x] 1.0 Granola connection (OAuth connect-once + auto-refresh) + status
 
 Server-only Granola OAuth + encrypted refresh-token store + auto-refresh, a status
 endpoint that never leaks the token, a Settings status row, and setup docs. (Unit 1.)
@@ -65,16 +65,16 @@ endpoint that never leaks the token, a Settings status row, and setup docs. (Uni
 
 #### 1.0 Tasks
 
-- [ ] 1.1 `lib/granola/types.ts` (status, meeting, transcript, action-item, store shapes).
-- [ ] 1.2 `lib/granola/auth.ts` (OAuth2: auth URL offline, exchange, refresh) +
+- [x] 1.1 `lib/granola/types.ts` (status, meeting, transcript, action-item, store shapes).
+- [x] 1.2 `lib/granola/auth.ts` (OAuth2: auth URL offline, exchange, refresh) +
   `lib/granola/config.ts` (`isGranolaConfigured`, `isMockMode`).
-- [ ] 1.3 `lib/granola/tokenStore.ts` (AES-256-GCM, gitignored `.granola-tokens.json`,
+- [x] 1.3 `lib/granola/tokenStore.ts` (AES-256-GCM, gitignored `.granola-tokens.json`,
   reuse `TOKEN_ENC_SECRET`) + `tokenStore.test.ts`.
-- [ ] 1.4 Routes: `connect`, `callback`, `status`, `disconnect`; `status.test.ts`
+- [x] 1.4 Routes: `connect`, `callback`, `status`, `disconnect`; `status.test.ts`
   (no-leak). Mock mode → status connected.
-- [ ] 1.5 `components/Settings/GranolaConnect.tsx` + render in the Settings drawer.
-- [ ] 1.6 `.env.example` + `.gitignore` entries + `docs/granola-setup.md`.
-- [ ] 1.7 Gates; screenshot; commit `feat: Granola OAuth foundation + status (T1.0, Spec 05)`.
+- [x] 1.5 `components/Settings/GranolaConnect.tsx` + render in the Settings drawer.
+- [x] 1.6 `.env.example` + `.gitignore` entries + `docs/granola-setup.md`.
+- [x] 1.7 Gates; screenshot; commit `feat: Granola OAuth foundation + status (T1.0, Spec 05)`.
 
 ### [ ] 2.0 Transcripts → AI-extracted action items
 
