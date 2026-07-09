@@ -146,7 +146,7 @@ pages + API, 401 for API, `.env.example` documentation.
   cookie returns 401 and a page redirects. Confirm the full gate passes; commit
   (`… Related to T2.0 in Spec 06`).
 
-### [ ] 3.0 GitHub Actions CI quality gate
+### [~] 3.0 GitHub Actions CI quality gate
 
 Add one slim workflow (`.github/workflows/ci.yml`) that, on every push and pull request, runs
 `npm ci` then `npm run lint`, `npm run typecheck`, and `npm test` on `ubuntu-latest` with Node
@@ -166,12 +166,13 @@ no-deploy-in-CI.
 
 #### 3.0 Tasks
 
-- [ ] 3.1 Create `.github/workflows/ci.yml`: triggers `push` and `pull_request`; job on
-  `ubuntu-latest`; steps = `actions/checkout`, `actions/setup-node` (Node 20 + npm cache),
-  `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`. No deploy steps.
-- [ ] 3.2 Push a branch and open a PR (or push to a branch) to confirm the workflow runs and is
-  **green**; capture the green-run screenshot. Confirm the same commands pass locally. Commit
-  (`… Related to T3.0 in Spec 06`).
+- [x] 3.1 Create `.github/workflows/ci.yml`: triggers `push:[main]` + `pull_request`; job on
+  `ubuntu-latest`; steps = `actions/checkout`, `actions/setup-node` (Node 22 + npm cache),
+  `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`. No deploy steps. YAML validated;
+  commands pass locally.
+- [ ] 3.2 **(pending first push)** Confirm the workflow runs **green** on GitHub; capture the
+  green-run screenshot. Sequenced with connecting Vercel (Task 4) and the end-to-end proof
+  (Task 5).
 
 ### [ ] 4.0 Vercel deployment with all integrations live + docs
 
