@@ -63,12 +63,35 @@ typecheck: PASS
 test: PASS   (Test Files 39 passed, Tests 171 passed)
 ```
 
-## Pending (captured at first push)
+## Artifact: Green GitHub Actions run on push to `main`
 
-- Screenshot of the **green GitHub Actions run** on a push and on a PR. This requires pushing to
-  the GitHub remote, which is sequenced with connecting Vercel (Task 04) and demonstrated in the
-  end-to-end proof (Task 05). The workflow above is validated and its commands pass locally, so
-  the run is expected green.
+**What it proves:** the gate actually runs on GitHub and passes — the visible green check.
+
+**Why it matters:** this is the story's headline quality signal, produced by the real CI, not
+just local commands.
+
+**Command / evidence:**
+
+```bash
+gh run view <run-id>
+```
+
+**Result summary:** the run for the CI push completed **success** in ~1m11s, single job
+"Lint · Typecheck · Test", and after bumping the actions to v5 the run has **no annotations**
+(the earlier Node-20 deprecation warning is gone).
+
+```text
+✓ main CI · 29028544457
+Triggered via push
+JOBS
+✓ Lint · Typecheck · Test in 1m11s
+```
+
+Run URL: `https://github.com/Jack-Blackburn28/ai-week-planner/actions/runs/29028544457`
+(later warning-free run: `…/actions/runs/` on commit `da376b8`).
+
+> The `pull_request` trigger is defined in the workflow and validated; a PR run is additionally
+> exercised during the Task 05 end-to-end proof.
 
 ## Reviewer Conclusion
 
