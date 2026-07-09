@@ -14,14 +14,17 @@
   --color-work: #2563eb;
   --color-work-soft: #dbeafe;
   --color-work-ring: #93c5fd;
+  --color-work-outline: #1d4ed8;
 
   --color-school: #7c3aed;
   --color-school-soft: #ede9fe;
   --color-school-ring: #c4b5fd;
+  --color-school-outline: #6d28d9;
 
   --color-personal: #059669;
   --color-personal-soft: #d1fae5;
   --color-personal-ring: #6ee7b7;
+  --color-personal-outline: #047857;
 
   --color-surface: #f7f7f5;
   --color-panel: #ffffff;

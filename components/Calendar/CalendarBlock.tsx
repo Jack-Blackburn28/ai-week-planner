@@ -12,23 +12,26 @@ import {
  */
 const SOURCE_STYLE: Record<
   BlockSource,
-  { fill: string; border: string; text: string; solid: string }
+  { fill: string; border: string; outline: string; text: string; solid: string }
 > = {
   work: {
     fill: "bg-work-soft",
     border: "border-work",
+    outline: "border-work-outline",
     text: "text-work",
     solid: "bg-work",
   },
   school: {
     fill: "bg-school-soft",
     border: "border-school",
+    outline: "border-school-outline",
     text: "text-school",
     solid: "bg-school",
   },
   personal: {
     fill: "bg-personal-soft",
     border: "border-personal",
+    outline: "border-personal-outline",
     text: "text-personal",
     solid: "bg-personal",
   },
@@ -63,10 +66,10 @@ export function CalendarBlock({
   // Nested meetings: solid fill, white text, inset from the left so the parent
   // work block reads as "containing" them. Everything else: soft fill.
   const appearance = nested
-    ? `${style.solid} border ${style.border} text-white`
+    ? `${style.solid} border-2 ${style.outline} text-white`
     : isProposed
-      ? `${style.fill} ${style.text} border-2 border-dashed ${style.border} opacity-80`
-      : `${style.fill} ${style.text} border-l-4 ${style.border}`;
+      ? `${style.fill} ${style.text} border-2 border-dashed ${style.outline} opacity-80`
+      : `${style.fill} ${style.text} border-2 ${style.outline}`;
 
   return (
     <div
@@ -75,7 +78,7 @@ export function CalendarBlock({
       data-source={block.source}
       data-status={block.status}
       data-nested={nested ? "true" : "false"}
-      className={`absolute overflow-hidden rounded-md px-2 py-1 text-left ${appearance}`}
+      className={`absolute overflow-hidden rounded-md px-2 py-1 text-left shadow-sm transition-shadow duration-150 hover:shadow-md ${appearance}`}
       style={{
         top: `${top}px`,
         height: `${Math.max(height, 18)}px`,
