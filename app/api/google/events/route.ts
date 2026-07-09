@@ -14,6 +14,7 @@ import { tokenStore } from "@/lib/google/tokenStore";
 import type { GoogleAccount } from "@/lib/google/types";
 import { weekDates } from "@/lib/week";
 import type { RawEvent } from "@/lib/google/client";
+import { nowInPacific } from "@/lib/timezone";
 
 interface Source {
   account: GoogleAccount;
@@ -57,7 +58,7 @@ export async function GET(req: Request) {
     });
   }
 
-  const reference = new Date();
+  const reference = nowInPacific();
   const dates = weekDates(reference, weekOffset);
   const timeMin = new Date(dates[0]);
   timeMin.setHours(0, 0, 0, 0);

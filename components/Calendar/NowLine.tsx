@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { minutesToTopPx, type GridWindow } from "@/lib/time";
+import { nowInPacific } from "@/lib/timezone";
 
 interface NowLineProps {
   /** "Today" — used only to seed the initial clock (avoids hydration mismatch). */
@@ -18,7 +19,7 @@ export function NowLine({ referenceDate, window }: NowLineProps) {
   const [now, setNow] = useState<Date>(referenceDate);
 
   useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60_000);
+    const id = setInterval(() => setNow(nowInPacific()), 60_000);
     return () => clearInterval(id);
   }, []);
 

@@ -10,6 +10,7 @@ import { resolveClient } from "@/lib/canvas/client";
 import { resolveMode } from "@/lib/canvas/config";
 import { mapAssignments } from "@/lib/canvas/map";
 import type { TodoItem } from "@/lib/types";
+import { nowInPacific } from "@/lib/timezone";
 
 export async function GET() {
   try {
@@ -17,7 +18,7 @@ export async function GET() {
     // The ICS feed carries no submission status, so past-due can't be told from
     // done — show upcoming-only (overdue window 0). The token path keeps 14 days.
     const overdueWindowDays = resolveMode() === "ics" ? 0 : undefined;
-    const todos = mapAssignments(raw, new Date(), overdueWindowDays);
+    const todos = mapAssignments(raw, nowInPacific(), overdueWindowDays);
     return NextResponse.json<TodoItem[]>(todos);
   } catch (err) {
     console.error("[canvas] failed to fetch assignments:", err);

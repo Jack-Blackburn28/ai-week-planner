@@ -25,6 +25,7 @@ import { CanvasConnect } from "@/components/Settings/CanvasConnect";
 import { GranolaConnect } from "@/components/Settings/GranolaConnect";
 import { CompletedView } from "@/components/CompletedView";
 import type { CompletedItem } from "@/lib/todos/completions";
+import { nowInPacific } from "@/lib/timezone";
 
 const ERROR_REPLY =
   "Sorry — I couldn't reach the planner just now. Please try again in a moment.";
@@ -348,7 +349,7 @@ export function DashboardShell() {
     );
   }
 
-  const today = new Date();
+  const today = nowInPacific();
 
   return (
     <div className="flex h-dvh flex-col bg-surface">
