@@ -86,8 +86,22 @@ by auto-expanding the window without a rewrite.
 Vitest + React Testing Library. Pure `lib/` logic is unit-tested directly; components are
 tested with RTL. The Husky pre-commit hook runs lint + typecheck + test.
 
-## Deployment (Story 6, planned)
+## Deployment (Story 6)
 
-Docker image, Terraform (small/cheap, `jack-`-prefixed, us-west-2, teardown-able),
-GitHub Actions with OIDC building/testing/deploying on push to `main`. Secrets via env
-vars / GitHub secrets — never baked into the image.
+Hosted on **Vercel** (personal account, free tier) using Vercel's native Next.js support —
+no Docker or Terraform. Production deploys from `main`; pull requests get preview deploys.
+All secrets are **Vercel environment variables** (`ANTHROPIC_API_KEY`, `GOOGLE_*`,
+`TOKEN_ENC_SECRET`, `GRANOLA_API_KEY`, `CANVAS_*`, `APP_PASSWORD`, `SESSION_SECRET`, KV vars)
+— never committed. A slim **GitHub Actions** workflow (`.github/workflows/ci.yml`) runs
+lint + typecheck + test on every push and PR as the quality gate; Vercel handles deploying.
+
+**Access control:** a single shared password (`APP_PASSWORD`) gates every page and API route
+via `middleware.ts` (a signed HTTP-only session cookie; pages redirect to `/login`, API routes
+return 401). See `lib/auth/session.ts`.
+
+**Persistence on Vercel:** the filesystem is ephemeral, so the four stores (Google tokens,
+calendar mapping, Granola items, completions) persist through a hosted **key-value store** in
+production via `lib/storage/blobStore.ts` — the same code uses gitignored files locally and KV
+when its connection env vars are present.
+
+See `docs/deployment.md` for the full step-by-step setup.

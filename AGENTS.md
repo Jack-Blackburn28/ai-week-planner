@@ -77,7 +77,8 @@ easy to test and reuse.
 3. Google Calendar (read Liatrio work cal + personal; write approved blocks)
 4. Canvas assignments (API token; calendar-feed fallback)
 5. Granola action items → Work todos
-6. Deploy (Docker, Terraform, GitHub Actions + OIDC, password protection)
+6. Deploy (Vercel — prod from `main`, PR previews; in-app password gate; slim
+   GitHub Actions CI running lint + typecheck + test; hosted KV for persistence)
 
 Each story: `SDD-1` spec → `SDD-2` tasks + audit → `SDD-3` implement → `SDD-4` validate,
 then a hard stop for review. Artifacts live in `docs/specs/`.

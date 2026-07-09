@@ -174,7 +174,7 @@ no-deploy-in-CI.
   green-run screenshot. Sequenced with connecting Vercel (Task 4) and the end-to-end proof
   (Task 5).
 
-### [ ] 4.0 Vercel deployment with all integrations live + docs
+### [~] 4.0 Vercel deployment with all integrations live + docs
 
 Deploy from `main` (production) with PR previews via Vercel's native Next.js support (no
 Dockerfile). Provision the free KV add-on; configure all secrets as Vercel env vars; register
@@ -203,10 +203,10 @@ Satisfies the spec's docs-update requirement.
 
 #### 4.0 Tasks
 
-- [ ] 4.1 Confirm a clean production build (`npm run build`) and that no Vercel-specific config is
+- [x] 4.1 Confirm a clean production build (`npm run build`) and that no Vercel-specific config is
   needed (add a minimal `vercel.json` only if a real need appears). Verify `next.config.ts` needs
   no changes for Vercel.
-- [ ] 4.2 Write `docs/deployment.md` — a first-time-Vercel walkthrough: sign in with GitHub →
+- [x] 4.2 Write `docs/deployment.md` — a first-time-Vercel walkthrough: sign in with GitHub →
   import `Jack-Blackburn28/ai-week-planner` (framework auto-detected) → where the **Environment
   Variables** screen is (Project → Settings → Environment Variables) and the exact list to add
   (`ANTHROPIC_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`,
@@ -218,8 +218,8 @@ Satisfies the spec's docs-update requirement.
   Console, set `GOOGLE_REDIRECT_URI` to it, and set the OAuth consent screen publishing status so
   refresh tokens stay long-lived. (Sequence: first deploy → get URL → register → set env →
   redeploy.)
-- [ ] 4.4 Update `.env.example` deployment notes so every new var is documented.
-- [ ] 4.5 Remove the AWS/Terraform/Docker/OIDC plan: rewrite `AGENTS.md` roadmap item 6 to Vercel
+- [x] 4.4 Update `.env.example` deployment notes so every new var is documented.
+- [x] 4.5 Remove the AWS/Terraform/Docker/OIDC plan: rewrite `AGENTS.md` roadmap item 6 to Vercel
   + CI gate; update `docs/architecture.md` (Vercel + KV persistence, no Terraform); fix any
   Story-1 spec/proof lines that name AWS as the deploy target; add a "Deployment: Vercel" section
   to `README.md`. `grep -rniE 'aws|terraform|oidc|us-west-2|liatrio-forge'` over docs to confirm

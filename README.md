@@ -4,8 +4,8 @@ A personal, single-user, AI-powered week-planning dashboard — my Liatrio Forge
 capstone. It shows my week as a calendar, keeps my Work and School todos in view, and
 lets me plan the week by chatting with an AI that proposes time blocks I approve.
 
-> **Status:** Story 1 (UI shell with mock data). No AI or external integrations yet —
-> the chat echoes a placeholder and a scripted mock proposal demonstrates the flow.
+> **Status:** Stories 1–5 complete (UI shell, AI planner, Google Calendar, Canvas,
+> Granola). Story 6 (deploy to Vercel) in progress — see `docs/deployment.md`.
 
 ## Features (target)
 
@@ -44,6 +44,17 @@ A Husky **pre-commit hook** runs lint + typecheck + tests before every commit.
 - `lib/` — framework-free logic (types, config, mock data, planning rules).
 - `docs/` — steering docs (`product-vision`, `architecture`, `conventions`).
 - `docs/specs/` — Spec-Driven Development artifacts per story.
+
+## Deployment
+
+Deployed on **Vercel** (free tier) with production from `main` and preview deploys on PRs.
+The whole app is protected by a single shared password (`APP_PASSWORD`) enforced on every
+page and API route. A slim **GitHub Actions** workflow runs lint + typecheck + tests on every
+push/PR as the quality gate; Vercel handles deploying. On Vercel, persistent state (Google
+login, Granola items, completions) lives in a hosted key-value store instead of local files.
+
+See **[`docs/deployment.md`](./docs/deployment.md)** for the full step-by-step setup
+(connecting the repo, environment variables, the KV add-on, and the Google redirect URI).
 
 ## For contributors / agents
 
