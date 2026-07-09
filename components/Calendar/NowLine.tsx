@@ -12,8 +12,13 @@ interface NowLineProps {
 
 /**
  * A red current-time indicator across today's column (Google Calendar style):
- * a thin red line with a dot on the left edge. Ticks every minute. Hidden when
- * the current time falls outside the visible window.
+ * a thin red line with an arrowhead on the left edge. Ticks every minute.
+ * Hidden when the current time falls outside the visible window.
+ *
+ * The line and arrowhead are both centered on this container's own `top`
+ * (the exact current-time y-coordinate) via `top-0 -translate-y-1/2`, rather
+ * than nesting the arrow inside a zero-height `border-top` line — that
+ * indirection put the arrow's center on the line's edge, not its middle.
  */
 export function NowLine({ referenceDate, window }: NowLineProps) {
   const [now, setNow] = useState<Date>(referenceDate);
@@ -34,10 +39,12 @@ export function NowLine({ referenceDate, window }: NowLineProps) {
       className="pointer-events-none absolute left-0 right-0 z-30"
       style={{ top: `${minutesToTopPx(minutes, window)}px` }}
     >
-      <div className="relative border-t-2 border-red-500">
-        {/* Dot on the left edge (like Google Calendar). */}
-        <span className="absolute -left-[1px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-red-500" />
-      </div>
+      <div className="absolute inset-x-0 top-0 h-0.5 -translate-y-1/2 bg-red-500" />
+      {/* Arrowhead at the left edge, tip touching the start of the line. */}
+      <span
+        aria-hidden
+        className="absolute -left-[7px] top-0 h-0 w-0 -translate-y-1/2 border-y-[5px] border-l-[7px] border-y-transparent border-l-red-500"
+      />
     </div>
   );
 }
