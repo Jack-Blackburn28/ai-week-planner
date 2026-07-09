@@ -100,7 +100,7 @@ token encryption. Unblocks "everything persists" on Vercel (Unit 3).
   coverage. `npm run lint && npm run typecheck && npm test` all pass (156 tests). Commit
   (`… Related to T1.0 in Spec 06`).
 
-### [ ] 2.0 In-app password protection (all pages + API routes)
+### [x] 2.0 In-app password protection (all pages + API routes)
 
 Add a shared-password gate: a styled `/login` page, a verify API route that checks
 `APP_PASSWORD` server-side and sets a **signed, HTTP-only session cookie** (signed with
@@ -124,24 +124,24 @@ pages + API, 401 for API, `.env.example` documentation.
 
 #### 2.0 Tasks
 
-- [ ] 2.1 Create `lib/auth/session.ts` (framework-free): HMAC sign/verify a session value using
+- [x] 2.1 Create `lib/auth/session.ts` (framework-free): HMAC sign/verify a session value using
   `SESSION_SECRET` (`createSessionValue()`, `verifySessionValue(value)`), and a constant-time
   compare of a submitted password against `APP_PASSWORD`.
-- [ ] 2.2 Write `lib/auth/session.test.ts`: correct password → a value that verifies; tampered or
+- [x] 2.2 Write `lib/auth/session.test.ts`: correct password → a value that verifies; tampered or
   empty value → fails; wrong password rejected.
-- [ ] 2.3 Create `app/api/auth/login/route.ts` (POST): on correct password set a signed
+- [x] 2.3 Create `app/api/auth/login/route.ts` (POST): on correct password set a signed
   HTTP-only, `Secure`, `SameSite=Lax` session cookie and return success; on wrong password return
   **401**. Add `app/api/auth/logout/route.ts` to clear the cookie (optional).
-- [ ] 2.4 Create the styled `app/login/page.tsx` (small `"use client"` form): centered single
+- [x] 2.4 Create the styled `app/login/page.tsx` (small `"use client"` form): centered single
   password field, unlock button, visible error state, large touch target, using existing Tailwind
   `@theme` tokens; posts to the login route and redirects to `next` (or `/`) on success.
-- [ ] 2.5 Create root `middleware.ts` with a matcher covering all routes **except** `_next`,
+- [x] 2.5 Create root `middleware.ts` with a matcher covering all routes **except** `_next`,
   static assets/favicon, `/login`, and `/api/auth/login`. Verify the session cookie:
   unauthenticated **page** request → 307 redirect to `/login?next=<path>`; unauthenticated **API**
   request → `401` JSON. Ensure the login route is excluded so there is no redirect loop.
-- [ ] 2.6 Write auth/middleware tests: page redirect vs API 401, valid cookie passes through,
+- [x] 2.6 Write auth/middleware tests: page redirect vs API 401, valid cookie passes through,
   login route excluded. (Test the middleware logic and/or the login route directly.)
-- [ ] 2.7 Add `APP_PASSWORD` and `SESSION_SECRET` to `.env.example` (with comments + a
+- [x] 2.7 Add `APP_PASSWORD` and `SESSION_SECRET` to `.env.example` (with comments + a
   generate-a-secret hint). Verify locally: with the vars set, `curl` `/api/plan` without the
   cookie returns 401 and a page redirects. Confirm the full gate passes; commit
   (`… Related to T2.0 in Spec 06`).
