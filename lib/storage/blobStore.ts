@@ -24,8 +24,9 @@ export interface BlobStore {
 }
 
 /**
- * Minimal subset of a Redis-style client we depend on. Real implementation is
- * `@upstash/redis`; tests inject an in-memory fake with the same shape.
+ * Minimal subset of a Redis-style client we depend on. Real implementation wraps
+ * node-redis (`redis`) over the `REDIS_URL` connection string that Vercel's Redis
+ * add-on injects; tests inject an in-memory fake with the same shape.
  */
 export interface KvClient {
   get(key: string): Promise<string | null>;
@@ -33,16 +34,14 @@ export interface KvClient {
   del(key: string): Promise<unknown>;
 }
 
-/**
- * True when hosted-KV connection vars are configured. Supports both Vercel's
- * Marketplace KV names (`KV_REST_API_*`) and native Upstash names
- * (`UPSTASH_REDIS_REST_*`) so it works however the add-on is provisioned.
- */
+/** The Redis connection string, injected by the Vercel Redis add-on. */
+function redisUrl(): string | undefined {
+  return process.env.REDIS_URL ?? process.env.KV_URL;
+}
+
+/** True when a hosted Redis connection string is configured (i.e. on Vercel). */
 export function kvConfigured(): boolean {
-  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
-  const token =
-    process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
-  return Boolean(url && token);
+  return Boolean(redisUrl());
 }
 
 /** File backend: the current behavior — a single JSON file at `filePath`. */
@@ -84,23 +83,40 @@ export function createKvBlobStore(kvKey: string, client: KvClient): BlobStore {
   };
 }
 
-let cachedKvClient: KvClient | null = null;
+let cachedKvClient: Promise<KvClient> | null = null;
 
-/** Lazily build the real Upstash Redis client from whichever env vars are set. */
-async function realKvClient(): Promise<KvClient> {
+/**
+ * Lazily build and connect the node-redis client from `REDIS_URL`. The connected
+ * client is cached across warm serverless invocations; on connect failure the cache
+ * is cleared so the next call retries. We read/write raw JSON strings, so no
+ * serialization is done by the client.
+ */
+function realKvClient(): Promise<KvClient> {
   if (cachedKvClient) return cachedKvClient;
-  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
-  const token =
-    process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
-  const { Redis } = await import("@upstash/redis");
-  // automaticDeserialization off: we store/read raw JSON strings ourselves, so the
-  // client must not try to JSON.parse values on read.
-  cachedKvClient = new Redis({
-    url,
-    token,
-    automaticDeserialization: false,
-  }) as unknown as KvClient;
-  return cachedKvClient;
+  const p = (async () => {
+    const { createClient } = await import("redis");
+    const client = createClient({ url: redisUrl() });
+    client.on("error", (err) => console.error("[redis] client error:", err));
+    await client.connect();
+    return {
+      async get(key) {
+        const v = await client.get(key);
+        return v == null ? null : String(v);
+      },
+      async set(key, value) {
+        await client.set(key, value);
+      },
+      async del(key) {
+        await client.del(key);
+      },
+    } satisfies KvClient;
+  })();
+  cachedKvClient = p;
+  // If connecting fails, don't wedge the cache on a rejected promise.
+  p.catch(() => {
+    if (cachedKvClient === p) cachedKvClient = null;
+  });
+  return p;
 }
 
 /**

@@ -268,10 +268,10 @@ end — push → green check → automatic live deploy → revert → mobile che
 
 ## Open Questions
 
-1. **KV provider specifics:** planned as Vercel's free KV/Upstash Redis add-on unless Vercel
-   Blob is the more obvious free option; final choice made at implementation once the exact
-   free-tier add-on is visible in Jack's Vercel dashboard. (This is the only remaining
-   deferred decision.)
+1. **KV provider specifics:** ✅ resolved at the dashboard — the free **Redis (Redis Cloud)**
+   add-on (Free 30 MB) was provisioned; it exposes a `REDIS_URL` connection string, so the KV
+   backend uses **node-redis (`redis`) over `REDIS_URL`** (not the Upstash REST client the spec
+   originally guessed).
 
 ### Resolved during review (2026-07-08)
 

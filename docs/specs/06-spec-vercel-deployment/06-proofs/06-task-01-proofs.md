@@ -1,5 +1,13 @@
 # Task 01 Proofs — Persistent storage abstraction (KV + file backends)
 
+> **Update (provider resolved):** the hosted backend was initially built against the Upstash REST
+> client (`@upstash/redis`, `KV_REST_API_*` vars). When provisioning on Vercel, the free add-on
+> chosen was **Redis (Redis Cloud)**, which exposes a single **`REDIS_URL`** connection string. The
+> KV backend was therefore switched to **node-redis (`redis`) over `REDIS_URL`** (see commit
+> "use REDIS_URL + node-redis"). The abstraction, file backend, encryption, and async caller
+> refactor below are unchanged; only the KV client implementation and env var (`REDIS_URL`)
+> differ from the original text.
+
 ## Task Summary
 
 This task proves the app no longer depends on the local filesystem for durable state. All four

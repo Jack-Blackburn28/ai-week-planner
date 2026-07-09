@@ -27,12 +27,7 @@ function fakeKv(): KvClient & { store: Map<string, string> } {
   };
 }
 
-const KV_VARS = [
-  "KV_REST_API_URL",
-  "KV_REST_API_TOKEN",
-  "UPSTASH_REDIS_REST_URL",
-  "UPSTASH_REDIS_REST_TOKEN",
-];
+const KV_VARS = ["REDIS_URL", "KV_URL"];
 
 describe("blobStore backend selection", () => {
   const saved: Record<string, string | undefined> = {};
@@ -49,19 +44,17 @@ describe("blobStore backend selection", () => {
     });
   });
 
-  it("reports KV unconfigured when no connection vars are set", () => {
+  it("reports KV unconfigured when no connection string is set", () => {
     expect(kvConfigured()).toBe(false);
   });
 
-  it("reports KV configured with Vercel KV_REST_API_* vars", () => {
-    process.env.KV_REST_API_URL = "https://example.upstash.io";
-    process.env.KV_REST_API_TOKEN = "token";
+  it("reports KV configured with REDIS_URL", () => {
+    process.env.REDIS_URL = "redis://default:pw@example.redis.cloud:6379";
     expect(kvConfigured()).toBe(true);
   });
 
-  it("reports KV configured with native UPSTASH_REDIS_REST_* vars", () => {
-    process.env.UPSTASH_REDIS_REST_URL = "https://example.upstash.io";
-    process.env.UPSTASH_REDIS_REST_TOKEN = "token";
+  it("reports KV configured with the KV_URL alias", () => {
+    process.env.KV_URL = "rediss://default:pw@example.redis.cloud:6379";
     expect(kvConfigured()).toBe(true);
   });
 
