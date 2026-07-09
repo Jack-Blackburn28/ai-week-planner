@@ -36,6 +36,9 @@ yarn-error.log*
 .granola-store.json
 .completions.json
 
+# Work-hours rule (local dev persistence)
+.work-hours.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
