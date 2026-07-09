@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { CalendarBlock } from "@/lib/types";
 import { toCalendarBlocks, validateProposedBlocks } from "./validate";
 import type { ProposedBlock } from "./types";
+import { expandWorkHours } from "@/lib/workHours/expand";
 
 const workMon: CalendarBlock = {
   id: "work-0",
@@ -73,6 +74,20 @@ describe("validateProposedBlocks (AI output is untrusted)", () => {
       { title: "Focus", source: "personal", day: 2, startMinutes: 615, endMinutes: 675 },
     ]);
     expect(validateProposedBlocks(proposed, [realMeeting])).toHaveLength(0);
+  });
+
+  it("rejects a proposal overlapping a configured work-hours block (Spec 11)", () => {
+    // The same expandWorkHours() output the events route merges in — proves
+    // the planner respects it as immovable with zero changes to this module.
+    const [workHours] = expandWorkHours(
+      { days: { 0: { startMinutes: 9 * 60, endMinutes: 17 * 60 } } },
+      new Date(2026, 6, 6), // Mon 2026-07-06
+    );
+    const proposed = toCalendarBlocks([
+      // 11:00 Monday — squarely inside the configured work hours
+      { title: "Golf", source: "personal", day: 0, startMinutes: 660, endMinutes: 720 },
+    ]);
+    expect(validateProposedBlocks(proposed, [workHours])).toHaveLength(0);
   });
 
   it("allows a proposal overlapping an AI-Calendar event (not busy)", () => {

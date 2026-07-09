@@ -81,7 +81,7 @@
 - [x] 1.6 Run `npx vitest run lib/workHours/config.test.ts
   lib/workHours/expand.test.ts` and confirm all pass.
 
-### [ ] 2.0 Immovable + nested integration with the live calendar and planner
+### [x] 2.0 Immovable + nested integration with the live calendar and planner ✅ COMPLETE
 
 #### 2.0 Proof Artifact(s)
 
@@ -96,35 +96,35 @@
 
 #### 2.0 Tasks
 
-- [ ] 2.1 Create `lib/workHours/nest.ts` exporting `nestWithinWorkHours(
+- [x] 2.1 Create `lib/workHours/nest.ts` exporting `nestWithinWorkHours(
   workHoursBlocks: CalendarBlock[], events: CalendarBlock[]): CalendarBlock[]`
   — for each event, find a same-day work-hours block whose
   `[startMinutes, endMinutes]` fully contains the event's range; if found,
   return the event with `parentId` set to that block's `id`, else return it
   unchanged. Must not mutate the input arrays.
-- [ ] 2.2 Write `lib/workHours/nest.test.ts` covering: an event fully
+- [x] 2.2 Write `lib/workHours/nest.test.ts` covering: an event fully
   inside gets `parentId` set, an event outside is unaffected, an event only
   partially overlapping is NOT nested, and this holds regardless of the
   event's `source`.
-- [ ] 2.3 Update `app/api/google/events/route.ts`: after `mapEvents(...)`
+- [x] 2.3 Update `app/api/google/events/route.ts`: after `mapEvents(...)`
   produces `{ timed, allDay }`, call `workHoursConfig.get()`, expand it via
   `expandWorkHours(rule, reference, weekOffset)`, nest `timed` via
   `nestWithinWorkHours`, and return `blocks: [...workHoursBlocks,
   ...nestedTimed]` instead of the raw `timed` array (leave `allDay`
   untouched).
-- [ ] 2.4 Create `app/api/google/events/route.test.ts` (new file — no route
+- [x] 2.4 Create `app/api/google/events/route.test.ts` (new file — no route
   test currently exists for this endpoint) verifying: with a configured
   rule, the response includes a work-hours block and a same-day event
   inside it carries the matching `parentId`; with no rule configured, the
   response is unchanged from today's behavior (empty/Google-only blocks,
   no work-hours block, no nesting applied).
-- [ ] 2.5 Add a case to `lib/planner/validate.test.ts` confirming
+- [x] 2.5 Add a case to `lib/planner/validate.test.ts` confirming
   `validateProposedBlocks` drops a proposed block overlapping an immovable
   block with `source: "work"` sourced from work-hours expansion (same
   mechanism as the existing Google-sourced overlap test — this should pass
   with zero changes to `lib/planner/validate.ts` itself, confirming no
   planner code changes were needed).
-- [ ] 2.6 Run `npx vitest run lib/workHours/nest.test.ts
+- [x] 2.6 Run `npx vitest run lib/workHours/nest.test.ts
   app/api/google/events/route.test.ts lib/planner/validate.test.ts` and
   confirm all pass.
 

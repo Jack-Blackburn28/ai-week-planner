@@ -16,6 +16,9 @@ import { weekDates } from "@/lib/week";
 import type { RawEvent } from "@/lib/google/client";
 import { nowInPacific } from "@/lib/timezone";
 import { addDays } from "@/lib/date";
+import { workHoursConfig } from "@/lib/workHours/config";
+import { expandWorkHours } from "@/lib/workHours/expand";
+import { nestWithinWorkHours } from "@/lib/workHours/nest";
 
 interface Source {
   account: GoogleAccount;
@@ -89,5 +92,14 @@ export async function GET(req: Request) {
   }
 
   const { timed, allDay } = mapEvents(raw, metaByCalendar, reference, weekOffset);
-  return NextResponse.json({ weekOffset, blocks: timed, allDay });
+
+  const workHoursRule = await workHoursConfig.get();
+  const workHoursBlocks = expandWorkHours(workHoursRule, reference, weekOffset);
+  const nestedTimed = nestWithinWorkHours(workHoursBlocks, timed);
+
+  return NextResponse.json({
+    weekOffset,
+    blocks: [...workHoursBlocks, ...nestedTimed],
+    allDay,
+  });
 }
