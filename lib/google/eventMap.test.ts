@@ -89,6 +89,34 @@ describe("mapEvents", () => {
   });
 });
 
+describe("mapEvents — Pacific Time correctness", () => {
+  it("buckets an event's dateTime to the correct Pacific hour/day regardless of the process's own timezone", () => {
+    const originalTz = process.env.TZ;
+    process.env.TZ = "UTC";
+    try {
+      // Constructed *inside* the forced-TZ block so encode and decode stay in
+      // sync (Date's local fields are read dynamically against the current TZ).
+      const referenceUtc = new Date(2026, 6, 8); // Wed 2026-07-08
+      // 5–6 PM Pacific Daylight Time (UTC-7), expressed with its real offset —
+      // exactly how Google's API returns a timed event's dateTime.
+      const event: RawEvent = {
+        id: "offset-event",
+        summary: "Design review",
+        start: { dateTime: "2026-07-08T17:00:00-07:00" },
+        end: { dateTime: "2026-07-08T18:00:00-07:00" },
+        calendarId: "work-cal",
+      };
+      const { timed: blocks } = mapEvents([event], META, referenceUtc);
+      expect(blocks).toHaveLength(1);
+      expect(blocks[0].day).toBe(2); // Wed
+      expect(blocks[0].startMinutes).toBe(17 * 60);
+      expect(blocks[0].endMinutes).toBe(18 * 60);
+    } finally {
+      process.env.TZ = originalTz;
+    }
+  });
+});
+
 describe("dayIndexForDate", () => {
   it("returns the Mon..Sun column for a date in the displayed week", () => {
     expect(dayIndexForDate(new Date(2026, 6, 6), REFERENCE)).toBe(0); // Mon

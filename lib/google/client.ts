@@ -32,8 +32,13 @@ export interface RawEvent {
 /** An event to write to the AI Calendar. */
 export interface NewEvent {
   summary: string;
-  start: { dateTime: string };
-  end: { dateTime: string };
+  /**
+   * `dateTime` is timezone-naive local time; `timeZone` (an IANA name, e.g.
+   * "America/Los_Angeles") tells Google how to resolve it to a UTC instant —
+   * including DST — rather than this app computing that offset itself.
+   */
+  start: { dateTime: string; timeZone?: string };
+  end: { dateTime: string; timeZone?: string };
   /** App-private metadata (e.g. the original block `source`) round-tripped on read. */
   extendedProperties?: { private?: Record<string, string> };
 }

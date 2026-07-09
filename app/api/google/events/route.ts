@@ -15,6 +15,7 @@ import type { GoogleAccount } from "@/lib/google/types";
 import { weekDates } from "@/lib/week";
 import type { RawEvent } from "@/lib/google/client";
 import { nowInPacific } from "@/lib/timezone";
+import { addDays } from "@/lib/date";
 
 interface Source {
   account: GoogleAccount;
@@ -60,9 +61,13 @@ export async function GET(req: Request) {
 
   const reference = nowInPacific();
   const dates = weekDates(reference, weekOffset);
-  const timeMin = new Date(dates[0]);
+  // Padded a full day on each side of the Pacific week boundary: exact instant
+  // precision doesn't matter here (any real-world server-timezone-vs-Pacific
+  // skew is well under 24h), because correctness of which day an event lands
+  // on is enforced downstream by mapEvents' own Pacific-based day-bucketing.
+  const timeMin = addDays(dates[0], -1);
   timeMin.setHours(0, 0, 0, 0);
-  const timeMax = new Date(dates[6]);
+  const timeMax = addDays(dates[6], 1);
   timeMax.setHours(23, 59, 59, 999);
 
   const metaByCalendar: Record<string, CalendarMeta> = {};

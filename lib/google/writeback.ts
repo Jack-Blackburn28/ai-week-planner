@@ -8,6 +8,7 @@
  */
 import type { CalendarBlock } from "@/lib/types";
 import { weekDates } from "@/lib/week";
+import { formatPacificDateTime, PACIFIC_TIME_ZONE } from "@/lib/timezone";
 import type { GoogleCalendarClient } from "./client";
 import { ensureAiCalendar, type GoogleConfigStore } from "./config";
 
@@ -16,13 +17,6 @@ export interface CommitResult {
   id: string;
   /** The Google event id created for it. */
   googleEventId: string;
-}
-
-/** A Date on `date` at `minutes` from midnight (local time). */
-function atMinutes(date: Date, minutes: number): Date {
-  const d = new Date(date);
-  d.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0);
-  return d;
 }
 
 /**
@@ -45,8 +39,14 @@ export async function commitBlocks(
     if (!date) continue;
     const { id } = await client.insertEvent(aiCalendarId, {
       summary: b.title,
-      start: { dateTime: atMinutes(date, b.startMinutes).toISOString() },
-      end: { dateTime: atMinutes(date, b.endMinutes).toISOString() },
+      start: {
+        dateTime: formatPacificDateTime(date, b.startMinutes),
+        timeZone: PACIFIC_TIME_ZONE,
+      },
+      end: {
+        dateTime: formatPacificDateTime(date, b.endMinutes),
+        timeZone: PACIFIC_TIME_ZONE,
+      },
       extendedProperties: { private: { source: b.source } },
     });
     results.push({ id: b.id, googleEventId: id });

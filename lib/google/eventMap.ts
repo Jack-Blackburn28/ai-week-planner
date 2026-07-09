@@ -9,6 +9,7 @@
  */
 import type { BlockSource, CalendarBlock } from "@/lib/types";
 import { isSameDay, weekDates } from "@/lib/week";
+import { toPacific } from "@/lib/timezone";
 import type { RawEvent } from "./client";
 
 /** How a calendar's events should be tagged. */
@@ -77,8 +78,10 @@ export function mapEvents(
     }
 
     if (!e.start.dateTime || !e.end.dateTime) continue;
-    const start = new Date(e.start.dateTime);
-    const end = new Date(e.end.dateTime);
+    // Google's dateTime carries its own UTC offset; re-base to Pacific fields
+    // so day/hour bucketing matches the Pacific-based `dates` (from `reference`).
+    const start = toPacific(new Date(e.start.dateTime));
+    const end = toPacific(new Date(e.end.dateTime));
     const day = dayIndex(start);
     if (day < 0) continue;
 

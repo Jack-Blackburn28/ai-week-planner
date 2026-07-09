@@ -54,7 +54,7 @@
 - [x] 1.7 Run the existing `lib/date.test.ts` and `lib/week.test.ts` suites and confirm they pass with no source changes to `lib/date.ts`/`lib/week.ts` — this verifies the root-cause fix propagates correctly through the existing pure helpers.
 - [x] 1.8 Manually verify (via a `TZ=UTC` Node check standing in for the dev server) that Pacific time is computed correctly regardless of process timezone — see proof artifact 07-task-01-proofs.md.
 
-### [ ] 2.0 Google Calendar integration correctness
+### [x] 2.0 Google Calendar integration correctness ✅ COMPLETE
 
 #### 2.0 Proof Artifact(s)
 
@@ -64,11 +64,11 @@
 
 #### 2.0 Tasks
 
-- [ ] 2.1 Update `app/api/google/events/route.ts`'s `timeMin`/`timeMax` computation to pad at least 24 hours on each side of the Pacific week boundaries (computed from `nowInPacific()`-derived `weekDates`), rather than relying on exact server-local `setHours(0,0,0,0)`/`setHours(23,59,59,999)` boundaries.
-- [ ] 2.2 Update `lib/google/eventMap.ts` so each parsed event `Date` (`e.start.dateTime`/`e.end.dateTime`) is passed through `toPacific()` before `minutesOfDay`/day-bucketing reads its local getters.
-- [ ] 2.3 Extend `lib/google/eventMap.test.ts` with a case for an event `dateTime` carrying a non-Pacific offset (e.g. a UTC `Z` timestamp), asserting it maps to the correct Pacific hour and day column.
-- [ ] 2.4 Update `lib/google/writeback.ts`'s `atMinutes()`/`commitBlocks()` to build the event payload with a timezone-naive local dateTime string representing the intended Pacific wall-clock time, plus an explicit `timeZone: "America/Los_Angeles"` field on `start`/`end`, instead of `.toISOString()` on a locally-constructed `Date`.
-- [ ] 2.5 Extend `lib/google/writeback.test.ts` to assert the fake client receives the correct naive dateTime string and `timeZone` field for a given intended Pacific time, including one case where the intended date falls on a DST transition day.
+- [x] 2.1 Update `app/api/google/events/route.ts`'s `timeMin`/`timeMax` computation to pad at least 24 hours on each side of the Pacific week boundaries (computed from `nowInPacific()`-derived `weekDates`), rather than relying on exact server-local `setHours(0,0,0,0)`/`setHours(23,59,59,999)` boundaries.
+- [x] 2.2 Update `lib/google/eventMap.ts` so each parsed event `Date` (`e.start.dateTime`/`e.end.dateTime`) is passed through `toPacific()` before `minutesOfDay`/day-bucketing reads its local getters.
+- [x] 2.3 Extend `lib/google/eventMap.test.ts` with a case for an event `dateTime` carrying a non-Pacific offset (e.g. a UTC `Z` timestamp), asserting it maps to the correct Pacific hour and day column.
+- [x] 2.4 Update `lib/google/writeback.ts`'s `atMinutes()`/`commitBlocks()` to build the event payload with a timezone-naive local dateTime string representing the intended Pacific wall-clock time, plus an explicit `timeZone: "America/Los_Angeles"` field on `start`/`end`, instead of `.toISOString()` on a locally-constructed `Date`.
+- [x] 2.5 Extend `lib/google/writeback.test.ts` to assert the fake client receives the correct naive dateTime string and `timeZone` field for a given intended Pacific time, including one case where the intended date falls on a DST transition day.
 
 ### [ ] 3.0 Canvas due-date correctness
 

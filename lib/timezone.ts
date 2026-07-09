@@ -13,7 +13,7 @@
  * original real-world instant — only its local-getter fields are meaningful.
  * Never use the return value to produce a UTC instant for an external system.
  */
-const PACIFIC_TIME_ZONE = "America/Los_Angeles";
+export const PACIFIC_TIME_ZONE = "America/Los_Angeles";
 
 const PACIFIC_FORMATTER = new Intl.DateTimeFormat("en-US", {
   timeZone: PACIFIC_TIME_ZONE,
@@ -47,4 +47,23 @@ export function toPacific(date: Date): Date {
 /** The current instant, re-based to report Pacific Time wall-clock fields. */
 export function nowInPacific(): Date {
   return toPacific(new Date());
+}
+
+/**
+ * Format a timezone-naive local dateTime string ("YYYY-MM-DDTHH:mm:ss") for
+ * `minutesOfDay` on `date`'s calendar day (read via local getters — `date` is
+ * expected to already represent the intended Pacific day, e.g. from
+ * `lib/week.ts`'s `weekDates` fed a Pacific-based reference).
+ *
+ * Pair this with `timeZone: PACIFIC_TIME_ZONE` on a Google Calendar event's
+ * `start`/`end` so Google resolves the correct UTC instant (DST included) —
+ * this app never computes that UTC offset itself.
+ */
+export function formatPacificDateTime(date: Date, minutesOfDay: number): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hour = String(Math.floor(minutesOfDay / 60)).padStart(2, "0");
+  const minute = String(minutesOfDay % 60).padStart(2, "0");
+  return `${year}-${month}-${day}T${hour}:${minute}:00`;
 }
