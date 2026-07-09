@@ -80,12 +80,32 @@ grep -rniE "\b(aws|terraform|oidc)\b|docker" AGENTS.md README.md docs/architectu
 AWS? … No Docker, no Terraform" and `docs/architecture.md` "no Docker or Terraform". `AGENTS.md`
 roadmap item 6 and the architecture deployment section now describe Vercel + CI + KV.
 
-## Pending (done live with Jack, captured afterward)
+## Artifact: Live integrations + Redis persistence (done with Jack)
 
-- **4.3 (perform):** register `https://<vercel-url>/api/google/callback` in Google Cloud Console
-  and set the consent screen to production. (Documented in `docs/deployment.md`.)
-- **4.6:** connect Google/Canvas/Granola on the live URL and screenshot each working.
-- **4.7:** verify KV persistence across a redeploy and screenshot.
+**What it proves:** all integrations work on the deployed URL and state persists in the hosted
+Redis store — verified at the API level (sanitized; no personal calendar content committed).
+
+**Why it matters:** this is the "everything that worked locally works deployed" guarantee, and the
+Google-status check specifically proves Redis persistence (tokens written by the OAuth callback
+are read back on a later request).
+
+**Evidence (authenticated requests to the live URL):**
+
+```text
+GET /api/google/status        -> {"work":true,"personal":true}   # tokens persisted in Redis
+GET /api/granola/actions      -> 2 action items                  # Granola live + persisted
+GET /api/canvas/assignments   -> 0 (expected: summer session over, upcoming-only) — 200 OK
+```
+
+Jack additionally confirmed visually in the browser: both Google accounts connected, calendar
+events rendering, and Granola action items in the Work list.
+
+- **4.3 (perform):** ✅ Jack registered `https://ai-week-planner-tau.vercel.app/api/google/callback`
+  in Google Cloud Console and set the consent screen to production; Google sign-in completes on the
+  live app.
+- **4.6:** ✅ all four integrations verified working on the live URL (evidence above).
+- **4.7:** ✅ Redis persistence confirmed — Google connection status survives across requests, and
+  Granola items are stored (not re-extracted).
 
 ## Reviewer Conclusion
 

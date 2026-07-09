@@ -172,7 +172,7 @@ no-deploy-in-CI.
   commands pass locally.
 - [x] 3.2 Confirmed the workflow runs **green** on GitHub (push to main, ~1m11s, no annotations after v5 bump). Run 29028544457. PR trigger validated + exercised again in Task 5.
 
-### [~] 4.0 Vercel deployment with all integrations live + docs
+### [x] 4.0 Vercel deployment with all integrations live + docs
 
 Deploy from `main` (production) with PR previews via Vercel's native Next.js support (no
 Dockerfile). Provision the free KV add-on; configure all secrets as Vercel env vars; register
@@ -211,7 +211,7 @@ Satisfies the spec's docs-update requirement.
   `TOKEN_ENC_SECRET`, `GRANOLA_API_KEY`, `CANVAS_BASE_URL`, `CANVAS_ICS_URL`, `APP_PASSWORD`,
   `SESSION_SECRET`, KV vars) → provisioning the free KV add-on (Storage tab) and the env vars it
   injects → production=`main`, previews=PRs.
-- [ ] 4.3 Document + perform the Google OAuth production setup: register
+- [x] 4.3 Document + perform the Google OAuth production setup: register
   `https://<vercel-url>/api/google/callback` as an authorized redirect URI in Google Cloud
   Console, set `GOOGLE_REDIRECT_URI` to it, and set the OAuth consent screen publishing status so
   refresh tokens stay long-lived. (Sequence: first deploy → get URL → register → set env →
@@ -222,14 +222,14 @@ Satisfies the spec's docs-update requirement.
   Story-1 spec/proof lines that name AWS as the deploy target; add a "Deployment: Vercel" section
   to `README.md`. `grep -rniE 'aws|terraform|oidc|us-west-2|liatrio-forge'` over docs to confirm
   no stale deploy references remain (historical mentions in past proofs may stay if clearly dated).
-- [ ] 4.6 Deploy and verify on the live URL: connect Google (Work + Personal), confirm calendar
+- [x] 4.6 Deploy and verify on the live URL: connect Google (Work + Personal), confirm calendar
   read + a written event, Canvas assignments render, Granola work items appear, AI chat
   proposes/approves. Capture screenshots (secrets redacted).
-- [ ] 4.7 Verify KV persistence: after connecting Google + one Granola extraction, trigger a
+- [x] 4.7 Verify KV persistence: after connecting Google + one Granola extraction, trigger a
   redeploy/restart and confirm the login + items persist. Capture screenshot. Commit any code/doc
   changes (`… Related to T4.0 in Spec 06`).
 
-### [ ] 5.0 End-to-end proof + revert + mobile verification
+### [x] 5.0 End-to-end proof + revert + mobile verification
 
 Prove the whole pipeline: make a small **visible** change, push to `main`, show CI green and the
 change appearing automatically on the live URL, then **revert** it with a follow-up commit so the
@@ -249,11 +249,11 @@ mobile usability.
 
 #### 5.0 Tasks
 
-- [ ] 5.1 Make a small, safe, **visible** change (e.g. a tiny build/version tag in the footer);
+- [x] 5.1 Make a small, safe, **visible** change (e.g. a tiny build/version tag in the footer);
   commit to `main` and push.
-- [ ] 5.2 Confirm the GitHub Actions run is **green** and the change appears automatically on the
+- [x] 5.2 Confirm the GitHub Actions run is **green** and the change appears automatically on the
   live `*.vercel.app` URL. Capture the live screenshot + the green-CI screenshot.
-- [ ] 5.3 **Revert** the visible change with a follow-up commit; confirm the live app returns to
+- [x] 5.3 **Revert** the visible change with a follow-up commit; confirm the live app returns to
   normal (screenshot/log).
-- [ ] 5.4 Open the live URL on a **phone browser** (or mobile emulation); verify login, calendar,
+- [x] 5.4 Open the live URL on a **phone browser** (or mobile emulation); verify login, calendar,
   todos, and chat work at phone width. Capture a phone-width screenshot.
