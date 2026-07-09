@@ -173,7 +173,7 @@
 - [x] 3.7 Run `npx vitest run lib/workHours/parseMock.test.ts
   app/api/work-hours/parse/route.test.ts` and confirm all pass.
 
-### [ ] 4.0 Settings entry point — inline work-hours chat with confirm-before-save
+### [x] 4.0 Settings entry point — inline work-hours chat with confirm-before-save ✅ COMPLETE
 
 #### 4.0 Proof Artifact(s)
 
@@ -187,13 +187,13 @@
 
 #### 4.0 Tasks
 
-- [ ] 4.1 Create `app/api/work-hours/route.ts` with `GET` (returns the
+- [x] 4.1 Create `app/api/work-hours/route.ts` with `GET` (returns the
   current `WorkHoursRule` or `null`/default) and `POST` (persists a
   confirmed rule via `workHoursConfig.set`), following the existing
   `app/api/google/mapping`-style get/set route pattern.
-- [ ] 4.2 Write `app/api/work-hours/route.test.ts` covering GET returning
+- [x] 4.2 Write `app/api/work-hours/route.test.ts` covering GET returning
   the persisted rule and POST persisting a new one.
-- [ ] 4.3 Create `components/Settings/WorkHoursChat.tsx` (client component):
+- [x] 4.3 Create `components/Settings/WorkHoursChat.tsx` (client component):
   a "Change work hours" toggle button; when expanded, fetches the current
   rule on open and shows an opening assistant message that either asks
   generically (no rule) or references the current hours in plain language
@@ -204,19 +204,19 @@
   `proposedRule` to `/api/work-hours` then confirms in the chat; Discard
   clears the pending proposal and continues the conversation. This panel
   must never call `/api/plan` or offer to plan the week.
-- [ ] 4.4 Write `components/Settings/WorkHoursChat.test.tsx` covering: the
+- [x] 4.4 Write `components/Settings/WorkHoursChat.test.tsx` covering: the
   two opening-message variants (mock the GET), a full parse→summary→Save
   flow asserting `/api/work-hours` POST is called with the proposed rule,
   and a Discard flow asserting it is NOT called.
-- [ ] 4.5 Wire `WorkHoursChat` into `components/DashboardShell.tsx`'s
+- [x] 4.5 Wire `WorkHoursChat` into `components/DashboardShell.tsx`'s
   Settings drawer, alongside the existing `GoogleConnect`/`CanvasConnect`/
   `GranolaConnect` panels.
-- [ ] 4.6 Update `AGENTS.md`'s AI planner boundary note to mention the
+- [x] 4.6 Update `AGENTS.md`'s AI planner boundary note to mention the
   second Anthropic-SDK boundary file (`lib/workHours/parse.server.ts`),
   per the spec's Repository Standards section.
-- [ ] 4.7 Run `npx vitest run components/Settings/WorkHoursChat.test.tsx
+- [x] 4.7 Run `npx vitest run components/Settings/WorkHoursChat.test.tsx
   app/api/work-hours/route.test.ts` and confirm all pass.
-- [ ] 4.8 Manually verify in the dev server: open Settings, click "Change
+- [x] 4.8 Manually verify in the dev server: open Settings, click "Change
   work hours", describe hours in plain language, confirm the summary,
   save, and see the resulting immovable block on the calendar for the
   current week.

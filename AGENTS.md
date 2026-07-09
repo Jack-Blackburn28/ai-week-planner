@@ -45,8 +45,10 @@ docs/specs/          Spec-Driven Development artifacts (specs, tasks, audits, pr
 Import with the `@/*` alias (e.g. `import { Brand } from "@/components/Brand"`).
 
 **AI planner boundary:** the Anthropic SDK and `ANTHROPIC_API_KEY` are used ONLY in
-`lib/planner/server.ts` (imported by the `app/api/plan` route) — never from a
-`"use client"` component. Without a key, `runPlanner` falls back to `lib/planner/mock.ts`
+`lib/planner/server.ts` (imported by the `app/api/plan` route) and
+`lib/workHours/parse.server.ts` (imported by the `app/api/work-hours/parse` route) —
+never from a `"use client"` component. Without a key, `runPlanner` falls back to
+`lib/planner/mock.ts` and `parseWorkHours` falls back to `lib/workHours/parseMock.ts`,
 so the app still runs. The server always re-validates AI proposals against immovable
 blocks (`lib/planner/validate.ts`) — AI output is untrusted.
 

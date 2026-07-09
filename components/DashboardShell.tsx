@@ -23,6 +23,7 @@ import { ChatDrawer } from "@/components/Chat/ChatDrawer";
 import { GoogleConnect } from "@/components/Settings/GoogleConnect";
 import { CanvasConnect } from "@/components/Settings/CanvasConnect";
 import { GranolaConnect } from "@/components/Settings/GranolaConnect";
+import { WorkHoursChat } from "@/components/Settings/WorkHoursChat";
 import { CompletedView } from "@/components/CompletedView";
 import type { CompletedItem } from "@/lib/todos/completions";
 import { nowInPacific } from "@/lib/timezone";
@@ -543,6 +544,8 @@ export function DashboardShell() {
             <CanvasConnect />
             <div className="h-px bg-hairline" />
             <GranolaConnect />
+            <div className="h-px bg-hairline" />
+            <WorkHoursChat />
           </div>
         </div>
       )}
