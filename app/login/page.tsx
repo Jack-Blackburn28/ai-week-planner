@@ -97,11 +97,6 @@ export default function LoginPage() {
             {loading ? "Unlocking…" : "Unlock"}
           </button>
         </form>
-        {/* DEPLOY-CHECK: temporary visible marker for the Story 6 end-to-end proof.
-            Removed by the follow-up revert commit. */}
-        <p className="mt-4 text-center text-xs text-ink-soft">
-          deploy check · story-6-e2e ✓
-        </p>
       </div>
     </main>
   );
