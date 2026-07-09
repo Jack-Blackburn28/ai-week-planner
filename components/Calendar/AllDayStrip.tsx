@@ -24,7 +24,7 @@ export function AllDayStrip({ events, gutterPx }: Props) {
   return (
     <div
       data-testid="all-day-strip"
-      className="sticky top-[57px] z-10 grid border-b border-hairline bg-surface"
+      className="grid shrink-0 border-b border-hairline bg-surface"
       style={{ gridTemplateColumns: gridCols }}
     >
       <div className="flex items-center justify-end pr-1 text-[10px] uppercase tracking-wide text-ink-soft">

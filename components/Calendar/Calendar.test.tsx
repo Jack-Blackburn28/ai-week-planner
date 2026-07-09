@@ -127,4 +127,32 @@ describe("Calendar", () => {
     // It is not rendered as a timed calendar block.
     expect(container.querySelector('[data-block-id="bday"]')).toBeNull();
   });
+
+  it("confines the now-line inside the grid body, structurally separate from the header/strip", () => {
+    // 6:00 AM — the start of the default visible window, the scroll position
+    // most likely to have bled into the header under the old shared-scroll
+    // implementation (see Spec 08).
+    const nowAtWindowStart = new Date(2026, 6, 8, 6, 0, 0);
+    const { container } = render(
+      <Calendar blocks={[]} referenceDate={nowAtWindowStart} />,
+    );
+    const gridBody = container.querySelector(
+      '[data-testid="grid-body"]',
+    ) as HTMLElement;
+    const nowLine = container.querySelector(
+      '[data-testid="now-line"]',
+    ) as HTMLElement;
+    const header = container.querySelector(
+      '[data-testid="day-header"]',
+    ) as HTMLElement;
+
+    expect(gridBody).toBeInTheDocument();
+    expect(nowLine).toBeInTheDocument();
+    // The now-line lives inside the grid body's own scroll region...
+    expect(gridBody.contains(nowLine)).toBe(true);
+    // ...which is a structurally separate subtree from the header, so the
+    // two can never occupy the same DOM (and thus visual) region.
+    expect(gridBody.contains(header)).toBe(false);
+    expect(header.contains(gridBody)).toBe(false);
+  });
 });

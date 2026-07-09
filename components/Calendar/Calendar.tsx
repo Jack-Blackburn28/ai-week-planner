@@ -114,13 +114,14 @@ export function Calendar({
         </div>
       </div>
 
-      {/* Scroll area — scrolls vertically always, and horizontally on narrow
-          screens (min-width keeps day columns readable on a phone). */}
-      <div className="min-h-0 flex-1 overflow-auto">
-        <div className="min-w-[760px] md:min-w-0">
-          {/* Day headers (stick to the top while scrolling vertically) */}
+      {/* Outer scroll area — horizontal only (min-width keeps day columns
+          readable on a phone). The grid body scrolls vertically on its own,
+          below, so the now-line can never render behind the header/strip. */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-x-auto overflow-y-hidden">
+        <div className="flex min-h-0 min-w-[760px] flex-1 flex-col md:min-w-0">
+          {/* Day headers — always visible above the grid's own scroll region. */}
           <div
-            className="sticky top-0 z-20 grid border-b border-hairline bg-surface"
+            className="grid shrink-0 border-b border-hairline bg-surface"
             style={{ gridTemplateColumns: gridCols }}
           >
             <div />
@@ -154,66 +155,71 @@ export function Calendar({
           {/* All-day strip (context only — not busy) */}
           <AllDayStrip events={allDayEvents} gutterPx={GUTTER_PX} />
 
-          {/* Grid body */}
-          <div
-            className="grid"
-            style={{ gridTemplateColumns: gridCols, height: `${bodyHeight}px` }}
-          >
-            {/* Hour gutter */}
-            <div className="relative">
-              {marks.map((h) => (
-                <span
-                  key={h}
-                  className="absolute right-1 -translate-y-1/2 text-[10px] text-ink-soft"
-                  style={{ top: `${minutesToTopPx(h * 60, window)}px` }}
-                >
-                  {formatHour(h)}
-                </span>
-              ))}
-            </div>
+          {/* Grid body — its own vertical scroll region, decoupled from the
+              header/strip above, so the now-line is structurally confined
+              here and can never paint over them. */}
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <div
+              data-testid="grid-body"
+              className="grid"
+              style={{ gridTemplateColumns: gridCols, height: `${bodyHeight}px` }}
+            >
+              {/* Hour gutter */}
+              <div className="relative">
+                {marks.map((h) => (
+                  <span
+                    key={h}
+                    className="absolute right-1 -translate-y-1/2 text-[10px] text-ink-soft"
+                    style={{ top: `${minutesToTopPx(h * 60, window)}px` }}
+                  >
+                    {formatHour(h)}
+                  </span>
+                ))}
+              </div>
 
-            {/* Day columns */}
-            {dates.map((date, dayIndex) => {
-              const today = isSameDay(date, referenceDate);
-              const dayTop = topLevel.filter((b) => b.day === dayIndex);
-              const dayNested = nested.filter((b) => b.day === dayIndex);
-              // Cascade depth per group so overlapping meetings fan out.
-              const topDepth = cascadeDepths(dayTop);
-              const nestedDepth = cascadeDepths(dayNested);
-              return (
-                <div
-                  key={dayIndex}
-                  data-testid="day-column"
-                  className={`relative border-l border-hairline ${
-                    today ? "bg-work-soft/30" : ""
-                  }`}
-                  style={{
-                    backgroundImage:
-                      "repeating-linear-gradient(to bottom, transparent 0, transparent 59px, var(--color-hairline) 59px, var(--color-hairline) 60px)",
-                    backgroundSize: `100% ${HOUR_PX}px`,
-                  }}
-                >
-                  {dayTop.map((b) => (
-                    <CalendarBlock
-                      key={b.id}
-                      block={b}
-                      window={window}
-                      depth={topDepth[b.id] ?? 0}
-                    />
-                  ))}
-                  {dayNested.map((b) => (
-                    <CalendarBlock
-                      key={b.id}
-                      block={b}
-                      window={window}
-                      nested
-                      depth={nestedDepth[b.id] ?? 0}
-                    />
-                  ))}
-                  {today && <NowLine referenceDate={referenceDate} window={window} />}
-                </div>
-              );
-            })}
+              {/* Day columns */}
+              {dates.map((date, dayIndex) => {
+                const today = isSameDay(date, referenceDate);
+                const dayTop = topLevel.filter((b) => b.day === dayIndex);
+                const dayNested = nested.filter((b) => b.day === dayIndex);
+                // Cascade depth per group so overlapping meetings fan out.
+                const topDepth = cascadeDepths(dayTop);
+                const nestedDepth = cascadeDepths(dayNested);
+                return (
+                  <div
+                    key={dayIndex}
+                    data-testid="day-column"
+                    className={`relative border-l border-hairline ${
+                      today ? "bg-work-soft/30" : ""
+                    }`}
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(to bottom, transparent 0, transparent 59px, var(--color-hairline) 59px, var(--color-hairline) 60px)",
+                      backgroundSize: `100% ${HOUR_PX}px`,
+                    }}
+                  >
+                    {dayTop.map((b) => (
+                      <CalendarBlock
+                        key={b.id}
+                        block={b}
+                        window={window}
+                        depth={topDepth[b.id] ?? 0}
+                      />
+                    ))}
+                    {dayNested.map((b) => (
+                      <CalendarBlock
+                        key={b.id}
+                        block={b}
+                        window={window}
+                        nested
+                        depth={nestedDepth[b.id] ?? 0}
+                      />
+                    ))}
+                    {today && <NowLine referenceDate={referenceDate} window={window} />}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>
