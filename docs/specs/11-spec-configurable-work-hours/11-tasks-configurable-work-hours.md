@@ -128,7 +128,7 @@
   app/api/google/events/route.test.ts lib/planner/validate.test.ts` and
   confirm all pass.
 
-### [ ] 3.0 Natural-language parsing (Anthropic-backed + mock fallback)
+### [x] 3.0 Natural-language parsing (Anthropic-backed + mock fallback) ✅ COMPLETE
 
 #### 3.0 Proof Artifact(s)
 
@@ -141,36 +141,36 @@
 
 #### 3.0 Tasks
 
-- [ ] 3.1 Create `lib/workHours/schema.ts` with a Zod schema for the
+- [x] 3.1 Create `lib/workHours/schema.ts` with a Zod schema for the
   Anthropic structured-output result: `{ reply: string, proposedRule:
   WorkHoursRuleSchema | null }` (nullable proposal, mirroring
   `lib/planner/schema.ts`'s `plannerAiOutputSchema` pattern).
-- [ ] 3.2 Create `lib/workHours/parseMock.ts` exporting a deterministic
+- [x] 3.2 Create `lib/workHours/parseMock.ts` exporting a deterministic
   `parseWorkHoursMock(message: string, currentRule: WorkHoursRule | null):
   { reply: string; proposedRule?: WorkHoursRule }` handling common patterns
   (e.g. "H to H [weekday range]", "half day <weekday>"); when the message
   doesn't match a recognized pattern, return a reply asking for
   clarification and no `proposedRule` (never guess).
-- [ ] 3.3 Write `lib/workHours/parseMock.test.ts` covering at least: a
+- [x] 3.3 Write `lib/workHours/parseMock.test.ts` covering at least: a
   simple "9 to 5 Monday through Friday" case, a half-day-Friday variant,
   and an unrecognized message producing a clarifying reply with no
   `proposedRule`.
-- [ ] 3.4 Create `lib/workHours/parse.server.ts` (SERVER-ONLY) exporting
+- [x] 3.4 Create `lib/workHours/parse.server.ts` (SERVER-ONLY) exporting
   `parseWorkHours(message: string, currentRule: WorkHoursRule | null):
   Promise<{ reply: string; proposedRule?: WorkHoursRule }>`, using the
   Anthropic SDK with `zodOutputFormat` (mirroring `lib/planner/server.ts`'s
   `callAnthropic`) when `ANTHROPIC_API_KEY` is set, else delegating to
   `parseWorkHoursMock`. This file is the only place in this feature that
   imports the Anthropic SDK.
-- [ ] 3.5 Create `app/api/work-hours/parse/route.ts` — a `POST` route with
+- [x] 3.5 Create `app/api/work-hours/parse/route.ts` — a `POST` route with
   a shape guard (body must include `message: string` and an optional
   `currentRule`), delegating to `parseWorkHours`, returning `{ reply,
   proposedRule? }` or a 400/502 on bad input/failure, mirroring
   `app/api/plan/route.ts`'s structure.
-- [ ] 3.6 Write `app/api/work-hours/parse/route.test.ts` covering a valid
+- [x] 3.6 Write `app/api/work-hours/parse/route.test.ts` covering a valid
   request delegating correctly (mock the parse module) and an invalid body
   returning 400, mirroring `app/api/plan/route.test.ts`.
-- [ ] 3.7 Run `npx vitest run lib/workHours/parseMock.test.ts
+- [x] 3.7 Run `npx vitest run lib/workHours/parseMock.test.ts
   app/api/work-hours/parse/route.test.ts` and confirm all pass.
 
 ### [ ] 4.0 Settings entry point — inline work-hours chat with confirm-before-save
