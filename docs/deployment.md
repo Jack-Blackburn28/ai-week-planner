@@ -46,15 +46,17 @@ git push origin main
 4. Find **`ai-week-planner`** in the list of your GitHub repos and click **Import**. (If you don't
    see it, click **Adjust GitHub App Permissions** and grant access to the repo.)
 5. Vercel auto-detects **Next.js** — leave every build setting at its default.
-6. **Don't click Deploy yet** — first add storage and environment variables (next two steps). If
-   you already clicked it, that's fine; just finish Steps 3–4 and redeploy.
+6. Click **Deploy**. (On the import screen there is **no Storage tab yet** — it appears only after
+   the project is created.) This first deploy is a "bare" build: it succeeds, but the live app
+   looks empty because no secrets/password/KV are set yet. That's expected — Steps 3–7 fix it.
 
 ---
 
 ## Step 3 — Add the free KV storage (so your data persists)
 
 Vercel's servers have no permanent disk, so we store your Google login, Granola items, and
-checked-off todos in a small key-value database.
+checked-off todos in a small key-value database. (The **Storage** tab appears only now, after the
+first deploy created the project.)
 
 1. In your project, open the **Storage** tab.
 2. Click **Create Database** and choose a **Redis / KV** option from the Marketplace (e.g.
