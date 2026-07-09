@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { TodoItem as Item } from "@/lib/types";
 import { classifyDue, formatDueLabel, type DueStatus } from "@/lib/date";
 
@@ -20,6 +21,7 @@ export function TodoItem({ item, today, onToggle }: TodoItemProps) {
   const dueLabel = item.dueDate
     ? formatDueLabel(item.dueDate, today)
     : "No due date";
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <li className="flex items-start gap-3 rounded-lg px-2 py-2 hover:bg-surface">
@@ -50,13 +52,16 @@ export function TodoItem({ item, today, onToggle }: TodoItemProps) {
       </button>
 
       <div className="min-w-0 flex-1">
-        <p
-          className={`truncate text-sm leading-snug ${
-            item.done ? "text-ink-soft line-through" : "text-ink"
-          }`}
+        <button
+          type="button"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((e) => !e)}
+          className={`block w-full text-left text-sm leading-snug ${
+            expanded ? "" : "line-clamp-2"
+          } ${item.done ? "text-ink-soft line-through" : "text-ink"}`}
         >
           {item.title}
-        </p>
+        </button>
         <p className="truncate text-xs leading-snug">
           <span className="text-ink-soft">{item.metaLabel}</span>
           <span className="text-ink-soft"> · </span>
