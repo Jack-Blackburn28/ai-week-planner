@@ -23,7 +23,7 @@ describe("ensureAiCalendar", () => {
 
     expect(first).toBe(second);
     expect(client.createdCount()).toBe(1); // created only on the first call
-    expect(cfg.get().aiCalendarId).toBe(first);
+    expect((await cfg.get()).aiCalendarId).toBe(first);
   });
 
   it("reuses an existing calendar named 'AI Calendar' without creating a new one", async () => {

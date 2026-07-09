@@ -14,6 +14,6 @@ export async function POST(
   if (!isGoogleAccount(account)) {
     return NextResponse.json({ error: "unknown account" }, { status: 400 });
   }
-  tokenStore.disconnect(account);
+  await tokenStore.disconnect(account);
   return NextResponse.json({ ok: true });
 }

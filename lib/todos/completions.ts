@@ -8,8 +8,8 @@
  * Introduced in T3.0 (the Work list needs cleared-ids to enforce never-regenerate);
  * the clear/list endpoints and UI arrive in T4.0. Gitignored JSON file.
  */
-import { existsSync, readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
+import { getBlobStore } from "@/lib/storage/blobStore";
 import type { TodoSectionKey } from "@/lib/types";
 
 export interface CompletedItem {
@@ -22,50 +22,59 @@ export interface CompletedItem {
 }
 
 const DEFAULT_FILE = ".completions.json";
+const KV_KEY = "awp:completions";
 
 export interface CompletionsStore {
   /** All completed items, most-recent-first. */
-  list(): CompletedItem[];
+  list(): Promise<CompletedItem[]>;
   /** Set of completed item ids (for excluding from active lists). */
-  ids(): Set<string>;
+  ids(): Promise<Set<string>>;
   /** Record an item as completed (idempotent by id). */
-  add(item: CompletedItem): void;
+  add(item: CompletedItem): Promise<void>;
 }
 
 export function createCompletionsStore(
   opts: { filePath?: string } = {},
 ): CompletionsStore {
-  const resolvePath = () =>
-    opts.filePath ??
-    process.env.COMPLETIONS_FILE ??
-    resolve(process.cwd(), DEFAULT_FILE);
+  const blob = () =>
+    getBlobStore({
+      filePath:
+        opts.filePath ??
+        process.env.COMPLETIONS_FILE ??
+        resolve(process.cwd(), DEFAULT_FILE),
+      kvKey: KV_KEY,
+      mode: 0o600,
+    });
 
-  const read = (): CompletedItem[] => {
-    const path = resolvePath();
-    if (!existsSync(path)) return [];
+  const read = async (): Promise<CompletedItem[]> => {
+    const raw = await blob().read();
+    if (raw == null) return [];
     try {
-      const data = JSON.parse(readFileSync(path, "utf8")) as CompletedItem[];
+      const data = JSON.parse(raw) as CompletedItem[];
       return Array.isArray(data) ? data : [];
     } catch {
       return [];
     }
   };
 
-  const write = (items: CompletedItem[]) =>
-    writeFileSync(resolvePath(), JSON.stringify(items, null, 2), { mode: 0o600 });
+  const write = async (items: CompletedItem[]): Promise<void> => {
+    await blob().write(JSON.stringify(items, null, 2));
+  };
 
   return {
-    list() {
-      return [...read()].sort((a, b) => b.completedAt.localeCompare(a.completedAt));
+    async list() {
+      return [...(await read())].sort((a, b) =>
+        b.completedAt.localeCompare(a.completedAt),
+      );
     },
-    ids() {
-      return new Set(read().map((i) => i.id));
+    async ids() {
+      return new Set((await read()).map((i) => i.id));
     },
-    add(item) {
-      const items = read();
+    async add(item) {
+      const items = await read();
       if (items.some((i) => i.id === item.id)) return; // idempotent
       items.push(item);
-      write(items);
+      await write(items);
     },
   };
 }

@@ -11,5 +11,5 @@ export async function GET() {
     // Demo mode: report both accounts connected so the full flow is usable.
     return NextResponse.json({ work: true, personal: true });
   }
-  return NextResponse.json(tokenStore.status());
+  return NextResponse.json(await tokenStore.status());
 }

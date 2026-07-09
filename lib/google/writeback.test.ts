@@ -36,7 +36,7 @@ describe("commitBlocks (write-back to AI Calendar)", () => {
 
     const results = await commitBlocks(client, config, proposed, REFERENCE, 0);
 
-    const aiId = config.get().aiCalendarId!;
+    const aiId = (await config.get()).aiCalendarId!;
     expect(aiId).toBeTruthy();
     const written = client.inserted(aiId);
     expect(written).toHaveLength(1);

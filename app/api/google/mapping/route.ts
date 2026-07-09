@@ -12,7 +12,7 @@ import {
 } from "@/lib/google/config";
 
 export async function GET() {
-  return NextResponse.json(googleConfig.get());
+  return NextResponse.json(await googleConfig.get());
 }
 
 export async function POST(req: Request) {
@@ -21,9 +21,9 @@ export async function POST(req: Request) {
     work: body.work ?? [],
     personal: body.personal ?? [],
     ignored: body.ignored ?? [],
-    aiCalendarId: googleConfig.get().aiCalendarId,
+    aiCalendarId: (await googleConfig.get()).aiCalendarId,
   };
-  googleConfig.set(mapping);
+  await googleConfig.set(mapping);
 
   // Make sure the write-back calendar exists (idempotent).
   try {
@@ -31,5 +31,5 @@ export async function POST(req: Request) {
   } catch {
     // Personal account may not be connected yet; mapping is still saved.
   }
-  return NextResponse.json(googleConfig.get());
+  return NextResponse.json(await googleConfig.get());
 }

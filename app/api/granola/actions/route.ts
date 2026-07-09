@@ -17,7 +17,7 @@ import type { TodoItem } from "@/lib/types";
 
 export async function GET() {
   try {
-    const completed = completionsStore.list();
+    const completed = await completionsStore.list();
     const open = await syncActions({
       store: granolaStore,
       client: resolveClient(),

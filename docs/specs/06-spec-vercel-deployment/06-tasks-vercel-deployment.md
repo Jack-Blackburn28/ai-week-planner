@@ -55,7 +55,7 @@ end-to-end proof that exercises the whole pipeline.
 
 ## Tasks
 
-### [ ] 1.0 Persistent storage abstraction (KV + file backends)
+### [x] 1.0 Persistent storage abstraction (KV + file backends)
 
 Replace direct local-file persistence with a small storage layer that uses the current JSON
 **file backend** locally and a **hosted KV backend** on Vercel (auto-selected by presence of
@@ -79,27 +79,25 @@ token encryption. Unblocks "everything persists" on Vercel (Unit 3).
 
 #### 1.0 Tasks
 
-- [ ] 1.1 Add the KV client dependency (`@upstash/redis`) and create `lib/storage/blobStore.ts`:
-  an async `BlobStore` interface (`get(key)`, `set(key, value)`, `del(key)` over JSON strings)
-  with a **file backend** (wraps the existing `fs` read/write, honoring per-store file-path
-  overrides so tests keep working) and a **KV backend** (Upstash/Vercel-KV REST via env vars).
-  Export `getBlobStore()` that returns the KV backend when its connection env vars are present,
-  else the file backend.
-- [ ] 1.2 Write `lib/storage/blobStore.test.ts`: backend selection (KV env present → KV; absent →
+- [x] 1.1 Add the KV client dependency (`@upstash/redis`) and create `lib/storage/blobStore.ts`:
+  an async `BlobStore` interface (`read`/`write`/`remove` over JSON strings) with a **file
+  backend** (wraps the existing `fs` read/write, honoring per-store file-path overrides so tests
+  keep working) and a **KV backend** (Upstash/Vercel-KV REST via env vars). Export `getBlobStore()`
+  that returns the KV backend when its connection env vars are present, else the file backend.
+- [x] 1.2 Write `lib/storage/blobStore.test.ts`: backend selection (KV env present → KV; absent →
   file) and a round-trip against an in-memory/mocked KV client.
-- [ ] 1.3 Refactor `lib/google/tokenStore.ts` to persist via the blob store and make
+- [x] 1.3 Refactor `lib/google/tokenStore.ts` to persist via the blob store and make
   `saveToken`/`getToken`/`status`/`disconnect` **async**; keep AES-256-GCM encryption (encrypt
-  before `set`, decrypt after `get`). Preserve `createTokenStore({ filePath })` (file backend) for
-  tests.
-- [ ] 1.4 Refactor the other three stores to delegate to the blob store and go async:
+  before `write`, decrypt after `read`). Preserve `createTokenStore({ filePath })` (file backend)
+  for tests.
+- [x] 1.4 Refactor the other three stores to delegate to the blob store and go async:
   `lib/google/config.ts` (`get`/`set`/`busySources` + `ensureAiCalendar`), `lib/granola/store.ts`
-  (`read`/`write`; `syncActions` already awaits), `lib/todos/completions.ts` (`list`/`ids`/`add`).
-- [ ] 1.5 Update all callers to `await`: `lib/google/client.ts`,
-  `app/api/google/{events,calendars,callback,disconnect,status}/route.ts`,
-  `app/api/granola/actions/route.ts`, `app/api/todos/{complete,completed}/route.ts`, and any
-  planner/read paths that use these stores.
-- [ ] 1.6 Update the existing store tests to `await` the async methods; add KV-backend round-trip
-  coverage. Confirm `npm run lint && npm run typecheck && npm test` all pass. Commit
+  (`read`/`write`; `syncActions` awaits), `lib/todos/completions.ts` (`list`/`ids`/`add`).
+- [x] 1.5 Update all callers to `await`: `lib/google/client.ts` (`calendarFor` now async),
+  `app/api/google/{events,calendars,callback,disconnect,status,mapping}/route.ts`,
+  `app/api/granola/actions/route.ts`, `app/api/todos/{complete,completed}/route.ts`.
+- [x] 1.6 Update the existing store tests to `await` the async methods; add KV-backend round-trip
+  coverage. `npm run lint && npm run typecheck && npm test` all pass (156 tests). Commit
   (`… Related to T1.0 in Spec 06`).
 
 ### [ ] 2.0 In-app password protection (all pages + API routes)

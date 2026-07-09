@@ -7,11 +7,12 @@
  * deliberately EXCLUDED from the busy sources — the AI must not treat its own
  * placements as busy time.
  */
-import { existsSync, readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
+import { getBlobStore } from "@/lib/storage/blobStore";
 import type { GoogleCalendarClient } from "./client";
 
 const DEFAULT_FILE = ".google-config.json";
+const KV_KEY = "awp:google-config";
 export const AI_CALENDAR_NAME = "AI Calendar";
 
 export interface CalendarMapping {
@@ -28,42 +29,46 @@ export interface CalendarMapping {
 const EMPTY: CalendarMapping = { work: [], personal: [], ignored: [] };
 
 export interface GoogleConfigStore {
-  get(): CalendarMapping;
-  set(mapping: CalendarMapping): void;
+  get(): Promise<CalendarMapping>;
+  set(mapping: CalendarMapping): Promise<void>;
   /**
    * Busy-source calendars per account. The personal list EXCLUDES the AI
    * Calendar so the planner never counts its own events as busy time.
    */
-  busySources(): { work: string[]; personal: string[] };
+  busySources(): Promise<{ work: string[]; personal: string[] }>;
 }
 
 export function createGoogleConfig(
   opts: { filePath?: string } = {},
 ): GoogleConfigStore {
-  const resolvePath = () =>
-    opts.filePath ??
-    process.env.GOOGLE_CONFIG_FILE ??
-    resolve(process.cwd(), DEFAULT_FILE);
+  const blob = () =>
+    getBlobStore({
+      filePath:
+        opts.filePath ??
+        process.env.GOOGLE_CONFIG_FILE ??
+        resolve(process.cwd(), DEFAULT_FILE),
+      kvKey: KV_KEY,
+    });
 
-  const get = (): CalendarMapping => {
-    const path = resolvePath();
-    if (!existsSync(path)) return { ...EMPTY };
+  const get = async (): Promise<CalendarMapping> => {
+    const raw = await blob().read();
+    if (raw == null) return { ...EMPTY };
     try {
-      return { ...EMPTY, ...(JSON.parse(readFileSync(path, "utf8")) as CalendarMapping) };
+      return { ...EMPTY, ...(JSON.parse(raw) as CalendarMapping) };
     } catch {
       return { ...EMPTY };
     }
   };
 
-  const set = (mapping: CalendarMapping): void => {
-    writeFileSync(resolvePath(), JSON.stringify(mapping, null, 2));
+  const set = async (mapping: CalendarMapping): Promise<void> => {
+    await blob().write(JSON.stringify(mapping, null, 2));
   };
 
   return {
     get,
     set,
-    busySources() {
-      const m = get();
+    async busySources() {
+      const m = await get();
       return {
         work: m.work,
         personal: m.personal.filter((id) => id !== m.aiCalendarId),
@@ -83,9 +88,9 @@ export async function ensureAiCalendar(
   client: GoogleCalendarClient,
   config: GoogleConfigStore = googleConfig,
 ): Promise<string> {
-  const current = config.get();
+  const current = await config.get();
   if (current.aiCalendarId) return current.aiCalendarId;
   const id = await client.ensureCalendar(AI_CALENDAR_NAME);
-  config.set({ ...current, aiCalendarId: id });
+  await config.set({ ...current, aiCalendarId: id });
   return id;
 }

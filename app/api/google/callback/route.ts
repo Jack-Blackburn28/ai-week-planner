@@ -33,7 +33,7 @@ export async function GET(req: Request) {
       // No refresh token means Google didn't re-consent; ask the user to retry.
       return home({ google_error: "no_refresh_token" });
     }
-    tokenStore.saveToken(state, {
+    await tokenStore.saveToken(state, {
       refresh_token: tokens.refresh_token,
       scope: tokens.scope ?? undefined,
       obtained_at: new Date().toISOString(),

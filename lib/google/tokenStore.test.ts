@@ -24,55 +24,55 @@ afterEach(() => {
 });
 
 describe("tokenStore", () => {
-  it("round-trips a token through encrypt → decrypt", () => {
+  it("round-trips a token through encrypt → decrypt", async () => {
     const { store } = make();
-    store.saveToken("personal", { refresh_token: "1//super-secret-refresh" });
-    expect(store.getToken("personal")?.refresh_token).toBe(
+    await store.saveToken("personal", { refresh_token: "1//super-secret-refresh" });
+    expect((await store.getToken("personal"))?.refresh_token).toBe(
       "1//super-secret-refresh",
     );
   });
 
-  it("writes ciphertext, not the plaintext token, to disk", () => {
+  it("writes ciphertext, not the plaintext token, to disk", async () => {
     const { store, filePath } = make();
-    store.saveToken("work", { refresh_token: "1//plain-visible-token" });
+    await store.saveToken("work", { refresh_token: "1//plain-visible-token" });
     const raw = readFileSync(filePath, "utf8");
     expect(raw).not.toContain("1//plain-visible-token");
     expect(raw).not.toContain("refresh_token");
   });
 
-  it("reports connection status per account", () => {
+  it("reports connection status per account", async () => {
     const { store } = make();
-    expect(store.status()).toEqual({ work: false, personal: false });
-    store.saveToken("work", { refresh_token: "w" });
-    expect(store.status()).toEqual({ work: true, personal: false });
+    expect(await store.status()).toEqual({ work: false, personal: false });
+    await store.saveToken("work", { refresh_token: "w" });
+    expect(await store.status()).toEqual({ work: true, personal: false });
   });
 
-  it("treats a missing file as no connections", () => {
+  it("treats a missing file as no connections", async () => {
     const { store } = make();
-    expect(store.getToken("work")).toBeNull();
-    expect(store.status()).toEqual({ work: false, personal: false });
+    expect(await store.getToken("work")).toBeNull();
+    expect(await store.status()).toEqual({ work: false, personal: false });
   });
 
-  it("handles a malformed file without throwing", () => {
+  it("handles a malformed file without throwing", async () => {
     const { store, filePath } = make();
     writeFileSync(filePath, "not json {{{");
-    expect(store.status()).toEqual({ work: false, personal: false });
-    expect(store.getToken("personal")).toBeNull();
+    expect(await store.status()).toEqual({ work: false, personal: false });
+    expect(await store.getToken("personal")).toBeNull();
   });
 
-  it("disconnect clears one account only", () => {
+  it("disconnect clears one account only", async () => {
     const { store } = make();
-    store.saveToken("work", { refresh_token: "w" });
-    store.saveToken("personal", { refresh_token: "p" });
-    store.disconnect("work");
-    expect(store.status()).toEqual({ work: false, personal: true });
-    expect(store.getToken("personal")?.refresh_token).toBe("p");
+    await store.saveToken("work", { refresh_token: "w" });
+    await store.saveToken("personal", { refresh_token: "p" });
+    await store.disconnect("work");
+    expect(await store.status()).toEqual({ work: false, personal: true });
+    expect((await store.getToken("personal"))?.refresh_token).toBe("p");
   });
 
-  it("removes the file once the last account disconnects", () => {
+  it("removes the file once the last account disconnects", async () => {
     const { store, filePath } = make();
-    store.saveToken("personal", { refresh_token: "p" });
-    store.disconnect("personal");
+    await store.saveToken("personal", { refresh_token: "p" });
+    await store.disconnect("personal");
     expect(existsSync(filePath)).toBe(false);
   });
 });

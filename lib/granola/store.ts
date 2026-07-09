@@ -8,8 +8,8 @@
  *
  * State lives in a gitignored JSON file (mirrors `lib/google/config.ts`).
  */
-import { existsSync, readFileSync, writeFileSync } from "fs";
 import { resolve } from "path";
+import { getBlobStore } from "@/lib/storage/blobStore";
 import type { GranolaClient } from "./client";
 import { buildActionRecords } from "./map";
 import type {
@@ -20,31 +20,37 @@ import type {
 } from "./types";
 
 const DEFAULT_FILE = ".granola-store.json";
+const KV_KEY = "awp:granola-store";
 const EMPTY: GranolaStoreData = { processedMeetingIds: [], items: [] };
 
 export interface GranolaStore {
-  read(): GranolaStoreData;
-  write(data: GranolaStoreData): void;
+  read(): Promise<GranolaStoreData>;
+  write(data: GranolaStoreData): Promise<void>;
 }
 
 export function createGranolaStore(opts: { filePath?: string } = {}): GranolaStore {
-  const resolvePath = () =>
-    opts.filePath ??
-    process.env.GRANOLA_STORE_FILE ??
-    resolve(process.cwd(), DEFAULT_FILE);
+  const blob = () =>
+    getBlobStore({
+      filePath:
+        opts.filePath ??
+        process.env.GRANOLA_STORE_FILE ??
+        resolve(process.cwd(), DEFAULT_FILE),
+      kvKey: KV_KEY,
+      mode: 0o600,
+    });
 
   return {
-    read() {
-      const path = resolvePath();
-      if (!existsSync(path)) return { ...EMPTY };
+    async read() {
+      const raw = await blob().read();
+      if (raw == null) return { ...EMPTY };
       try {
-        return { ...EMPTY, ...(JSON.parse(readFileSync(path, "utf8")) as GranolaStoreData) };
+        return { ...EMPTY, ...(JSON.parse(raw) as GranolaStoreData) };
       } catch {
         return { ...EMPTY };
       }
     },
-    write(data) {
-      writeFileSync(resolvePath(), JSON.stringify(data, null, 2), { mode: 0o600 });
+    async write(data) {
+      await blob().write(JSON.stringify(data, null, 2));
     },
   };
 }
@@ -110,7 +116,7 @@ async function syncActionsUnlocked(
     now,
     windowDays = 7,
   } = opts;
-  const data = store.read();
+  const data = await store.read();
   let changed = false;
 
   // Clean any duplicate items a prior concurrent write may have left (by id or
@@ -167,7 +173,7 @@ async function syncActionsUnlocked(
 
   if (changed) {
     data.processedMeetingIds = [...processed];
-    store.write(data);
+    await store.write(data);
   }
 
   // Open = persisted items minus anything cleared.

@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   if (!id || (source !== "work" && source !== "school")) {
     return NextResponse.json({ error: "id and source required" }, { status: 400 });
   }
-  completionsStore.add({
+  await completionsStore.add({
     id,
     source,
     title: body.title ?? "",

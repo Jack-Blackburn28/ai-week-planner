@@ -24,9 +24,9 @@ interface Source {
 export async function GET(req: Request) {
   const weekOffset = Number(new URL(req.url).searchParams.get("week") ?? "0") || 0;
   const client = resolveClient();
-  const status = tokenStore.status();
+  const status = await tokenStore.status();
   const connected = (a: GoogleAccount) => isMockMode() || status[a];
-  const mapping = googleConfig.get();
+  const mapping = await googleConfig.get();
 
   // Resolve which calendars to read per account. Fall back to every calendar in
   // an account when the user hasn't saved an explicit mapping yet.

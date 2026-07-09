@@ -9,7 +9,7 @@ import type { GoogleAccount } from "@/lib/google/types";
 
 export async function GET() {
   const client = resolveClient();
-  const status = tokenStore.status();
+  const status = await tokenStore.status();
   const connected = (account: GoogleAccount) => isMockMode() || status[account];
 
   const out: Record<GoogleAccount, unknown[]> = { work: [], personal: [] };

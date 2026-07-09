@@ -13,15 +13,15 @@ function tempConfig() {
 afterEach(() => dirs.splice(0).forEach((d) => rmSync(d, { recursive: true, force: true })));
 
 describe("google config / mapping", () => {
-  it("round-trips a mapping through disk", () => {
+  it("round-trips a mapping through storage", async () => {
     const cfg = tempConfig();
-    cfg.set({
+    await cfg.set({
       work: ["w1", "w2"],
       personal: ["p1"],
       ignored: ["x1"],
       aiCalendarId: "ai-1",
     });
-    expect(cfg.get()).toEqual({
+    expect(await cfg.get()).toEqual({
       work: ["w1", "w2"],
       personal: ["p1"],
       ignored: ["x1"],
@@ -29,18 +29,18 @@ describe("google config / mapping", () => {
     });
   });
 
-  it("defaults to empty mapping when no file exists", () => {
-    expect(tempConfig().get()).toEqual({ work: [], personal: [], ignored: [] });
+  it("defaults to empty mapping when no file exists", async () => {
+    expect(await tempConfig().get()).toEqual({ work: [], personal: [], ignored: [] });
   });
 
-  it("excludes the AI Calendar from personal busy sources", () => {
+  it("excludes the AI Calendar from personal busy sources", async () => {
     const cfg = tempConfig();
-    cfg.set({
+    await cfg.set({
       work: ["w1"],
       personal: ["p1", "ai-1"],
       ignored: [],
       aiCalendarId: "ai-1",
     });
-    expect(cfg.busySources()).toEqual({ work: ["w1"], personal: ["p1"] });
+    expect(await cfg.busySources()).toEqual({ work: ["w1"], personal: ["p1"] });
   });
 });

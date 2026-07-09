@@ -53,8 +53,8 @@ export interface GoogleCalendarClient {
 }
 
 /** Build a `googleapis` calendar client authed as `account` via its stored token. */
-function calendarFor(account: GoogleAccount) {
-  const token = tokenStore.getToken(account);
+async function calendarFor(account: GoogleAccount) {
+  const token = await tokenStore.getToken(account);
   if (!token) throw new Error(`Google account "${account}" is not connected.`);
   const auth = oauthClient();
   auth.setCredentials({ refresh_token: token.refresh_token });
@@ -64,7 +64,7 @@ function calendarFor(account: GoogleAccount) {
 /** The real, network-backed client. Only exercised when credentials are present. */
 export const googleCalendarClient: GoogleCalendarClient = {
   async listCalendars(account) {
-    const res = await calendarFor(account).calendarList.list();
+    const res = await (await calendarFor(account)).calendarList.list();
     return (res.data.items ?? []).map((c) => ({
       id: c.id ?? "",
       name: c.summary ?? c.id ?? "(unnamed)",
@@ -73,7 +73,7 @@ export const googleCalendarClient: GoogleCalendarClient = {
   },
 
   async listEvents(account, calendarId, timeMin, timeMax) {
-    const res = await calendarFor(account).events.list({
+    const res = await (await calendarFor(account)).events.list({
       calendarId,
       timeMin,
       timeMax,
@@ -93,7 +93,7 @@ export const googleCalendarClient: GoogleCalendarClient = {
 
   async insertEvent(calendarId, event) {
     // Writes always target the personal account (the AI Calendar lives there).
-    const res = await calendarFor("personal").events.insert({
+    const res = await (await calendarFor("personal")).events.insert({
       calendarId,
       requestBody: event,
     });
@@ -101,7 +101,7 @@ export const googleCalendarClient: GoogleCalendarClient = {
   },
 
   async ensureCalendar(name) {
-    const cal = calendarFor("personal");
+    const cal = await calendarFor("personal");
     const list = await cal.calendarList.list();
     const found = (list.data.items ?? []).find((c) => c.summary === name);
     if (found?.id) return found.id;

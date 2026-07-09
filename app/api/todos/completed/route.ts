@@ -6,5 +6,5 @@ import { NextResponse } from "next/server";
 import { completionsStore, type CompletedItem } from "@/lib/todos/completions";
 
 export async function GET() {
-  return NextResponse.json<CompletedItem[]>(completionsStore.list());
+  return NextResponse.json<CompletedItem[]>(await completionsStore.list());
 }

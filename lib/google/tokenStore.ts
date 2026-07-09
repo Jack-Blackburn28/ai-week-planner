@@ -1,14 +1,15 @@
 /**
- * Encrypted, file-backed refresh-token store. No database yet (Story 3) — tokens
- * live in a gitignored file, encrypted at rest with AES-256-GCM using a key
- * derived from `TOKEN_ENC_SECRET`. This maps cleanly onto a mounted secret/volume
- * when the app is deployed (Story 6).
+ * Encrypted refresh-token store. Tokens are encrypted at rest with AES-256-GCM
+ * using a key derived from `TOKEN_ENC_SECRET`, then persisted through a `BlobStore`
+ * — a gitignored file locally, or a hosted KV store on Vercel (whose filesystem is
+ * ephemeral). Encryption is identical regardless of backend.
  *
  * SERVER-ONLY: uses Node `crypto`/`fs`. Never import from a client component.
  *
  * `createTokenStore` is a factory so tests can point at a temp file with a test
  * secret; `tokenStore` is the default singleton the app/routes use (it resolves
- * its path and secret lazily from the environment on each call).
+ * its path/key and secret lazily from the environment on each call). All methods
+ * are async because the KV backend is network-backed.
  */
 import {
   createCipheriv,
@@ -16,31 +17,37 @@ import {
   randomBytes,
   scryptSync,
 } from "crypto";
-import { existsSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { resolve } from "path";
+import { getBlobStore } from "@/lib/storage/blobStore";
 import type { ConnectionStatus, GoogleAccount, StoredToken } from "./types";
 
 const DEFAULT_FILE = ".tokens.json";
+const KV_KEY = "awp:google-tokens";
 /** Fixed salt: the secret is the real key material; this only diversifies scrypt. */
 const SCRYPT_SALT = "ai-week-planner.tokens.v1";
 
-/** On-disk shape: account → encrypted blob ("ivB64:tagB64:cipherB64"). */
+/** Stored shape: account → encrypted blob ("ivB64:tagB64:cipherB64"). */
 type TokenFile = Partial<Record<GoogleAccount, string>>;
 
 export interface TokenStore {
-  saveToken(account: GoogleAccount, token: StoredToken): void;
-  getToken(account: GoogleAccount): StoredToken | null;
-  status(): ConnectionStatus;
-  disconnect(account: GoogleAccount): void;
+  saveToken(account: GoogleAccount, token: StoredToken): Promise<void>;
+  getToken(account: GoogleAccount): Promise<StoredToken | null>;
+  status(): Promise<ConnectionStatus>;
+  disconnect(account: GoogleAccount): Promise<void>;
 }
 
 export function createTokenStore(
   opts: { filePath?: string; secret?: string } = {},
 ): TokenStore {
-  const resolvePath = () =>
-    opts.filePath ??
-    process.env.GOOGLE_TOKEN_FILE ??
-    resolve(process.cwd(), DEFAULT_FILE);
+  const blob = () =>
+    getBlobStore({
+      filePath:
+        opts.filePath ??
+        process.env.GOOGLE_TOKEN_FILE ??
+        resolve(process.cwd(), DEFAULT_FILE),
+      kvKey: KV_KEY,
+      mode: 0o600,
+    });
 
   const resolveKey = () => {
     const secret = opts.secret ?? process.env.TOKEN_ENC_SECRET ?? "";
@@ -78,54 +85,51 @@ export function createTokenStore(
     ]).toString("utf8");
   };
 
-  const read = (): TokenFile => {
-    const path = resolvePath();
-    if (!existsSync(path)) return {};
+  const read = async (): Promise<TokenFile> => {
+    const raw = await blob().read();
+    if (raw == null) return {};
     try {
-      return JSON.parse(readFileSync(path, "utf8")) as TokenFile;
+      return JSON.parse(raw) as TokenFile;
     } catch {
-      // Corrupt/unreadable file → treat as no connections rather than crash.
+      // Corrupt/unreadable blob → treat as no connections rather than crash.
       return {};
     }
   };
 
-  const write = (data: TokenFile): void => {
-    writeFileSync(resolvePath(), JSON.stringify(data, null, 2), {
-      mode: 0o600,
-    });
+  const write = async (data: TokenFile): Promise<void> => {
+    await blob().write(JSON.stringify(data, null, 2));
   };
 
   return {
-    saveToken(account, token) {
-      const data = read();
+    async saveToken(account, token) {
+      const data = await read();
       data[account] = encrypt(JSON.stringify(token));
-      write(data);
+      await write(data);
     },
 
-    getToken(account) {
-      const blob = read()[account];
-      if (!blob) return null;
+    async getToken(account) {
+      const enc = (await read())[account];
+      if (!enc) return null;
       try {
-        return JSON.parse(decrypt(blob)) as StoredToken;
+        return JSON.parse(decrypt(enc)) as StoredToken;
       } catch {
         return null;
       }
     },
 
-    status() {
-      const data = read();
+    async status() {
+      const data = await read();
       return { work: Boolean(data.work), personal: Boolean(data.personal) };
     },
 
-    disconnect(account) {
-      const data = read();
+    async disconnect(account) {
+      const data = await read();
       if (!(account in data)) return;
       delete data[account];
       if (Object.keys(data).length === 0) {
-        const path = resolvePath();
-        if (existsSync(path)) rmSync(path);
+        await blob().remove();
       } else {
-        write(data);
+        await write(data);
       }
     },
   };
