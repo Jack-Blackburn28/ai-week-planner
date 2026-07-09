@@ -9,17 +9,18 @@
  */
 import type { TodoItem } from "@/lib/types";
 import { daysUntil, isoDate } from "@/lib/date";
+import { toPacific } from "@/lib/timezone";
 import type { CanvasAssignment } from "./types";
 
 /** How many days an overdue assignment stays in the list before it drops off. */
 export const OVERDUE_WINDOW_DAYS = 14;
 
-/** Canvas `due_at` (ISO, often UTC) → local `YYYY-MM-DD`, or undefined if none. */
+/** Canvas `due_at` (ISO, often UTC) → Pacific `YYYY-MM-DD`, or undefined if none. */
 function toDueDate(dueAt: string | null): string | undefined {
   if (!dueAt) return undefined;
   const d = new Date(dueAt);
   if (Number.isNaN(d.getTime())) return undefined;
-  return isoDate(d);
+  return isoDate(toPacific(d));
 }
 
 /**

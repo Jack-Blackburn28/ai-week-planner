@@ -45,6 +45,21 @@ describe("mapAssignmentToTodo", () => {
       "Canvas",
     );
   });
+
+  it("buckets due_at to the correct Pacific calendar day, not the UTC day, regardless of process timezone", () => {
+    const originalTz = process.env.TZ;
+    process.env.TZ = "UTC";
+    try {
+      // 2026-07-10T02:00:00Z is 2026-07-09, 7:00 PM Pacific (PDT, UTC-7) — a
+      // different calendar day in Pacific than in UTC.
+      const todo = mapAssignmentToTodo(
+        make({ dueAt: "2026-07-10T02:00:00.000Z" }),
+      );
+      expect(todo.dueDate).toBe("2026-07-09");
+    } finally {
+      process.env.TZ = originalTz;
+    }
+  });
 });
 
 describe("inScope / mapAssignments (scope filter)", () => {

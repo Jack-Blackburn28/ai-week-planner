@@ -70,7 +70,7 @@
 - [x] 2.4 Update `lib/google/writeback.ts`'s `atMinutes()`/`commitBlocks()` to build the event payload with a timezone-naive local dateTime string representing the intended Pacific wall-clock time, plus an explicit `timeZone: "America/Los_Angeles"` field on `start`/`end`, instead of `.toISOString()` on a locally-constructed `Date`.
 - [x] 2.5 Extend `lib/google/writeback.test.ts` to assert the fake client receives the correct naive dateTime string and `timeZone` field for a given intended Pacific time, including one case where the intended date falls on a DST transition day.
 
-### [ ] 3.0 Canvas due-date correctness
+### [x] 3.0 Canvas due-date correctness ✅ COMPLETE
 
 #### 3.0 Proof Artifact(s)
 
@@ -79,6 +79,6 @@
 
 #### 3.0 Tasks
 
-- [ ] 3.1 Update `lib/canvas/map.ts`'s `toDueDate()` to pass the parsed `due_at` `Date` through `toPacific()` before calling `isoDate()`.
-- [ ] 3.2 Extend `lib/canvas/map.test.ts` with a `due_at` value that is on one UTC calendar day but a different Pacific calendar day (e.g. just after midnight UTC), asserting the Pacific day is used.
-- [ ] 3.3 Verify `lib/canvas/ics.ts`'s ICAL.js-derived ISO string flows into the corrected `toDueDate` path (either directly or via the same mapping function); add or extend a case in `lib/canvas/ics.test.ts` confirming this.
+- [x] 3.1 Update `lib/canvas/map.ts`'s `toDueDate()` to pass the parsed `due_at` `Date` through `toPacific()` before calling `isoDate()`.
+- [x] 3.2 Extend `lib/canvas/map.test.ts` with a `due_at` value that is on one UTC calendar day but a different Pacific calendar day (e.g. just after midnight UTC), asserting the Pacific day is used.
+- [x] 3.3 Verified `lib/canvas/ics.ts` never buckets a day itself — it only extracts an ISO instant string, which flows into the now-fixed `toDueDate()` via the shared `mapAssignments`/`mapAssignmentToTodo` path. No source change needed; `ics.test.ts` passes unmodified (see proof artifact).
