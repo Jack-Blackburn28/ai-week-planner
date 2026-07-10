@@ -38,7 +38,7 @@ describe("POST /api/work-hours/parse", () => {
     parseMock.mockResolvedValue({
       parsed_output: {
         reply: "Got it — Mon-Fri 9am-5pm. Save this?",
-        proposedRule: { days: { "0": { startMinutes: 540, endMinutes: 1020 } } },
+        proposedDays: [{ day: 0, startMinutes: 540, endMinutes: 1020 }],
       },
     });
 
@@ -46,6 +46,22 @@ describe("POST /api/work-hours/parse", () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.proposedRule.days["0"]).toEqual({ startMinutes: 540, endMinutes: 1020 });
+  });
+
+  it("never treats a confident reply paired with zero day entries as a real proposal", async () => {
+    process.env.ANTHROPIC_API_KEY = "sk-test-REDACTED";
+    parseMock.mockResolvedValue({
+      parsed_output: {
+        reply: "Got it — Mon-Fri 7am-4pm. Save this?",
+        proposedDays: [],
+      },
+    });
+
+    const res = await post({ message: "mon-fri 7-4" });
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.proposedRule).toBeUndefined();
+    expect(json.reply).not.toContain("Save this?");
   });
 
   it("uses the mock parser when no key is set", async () => {

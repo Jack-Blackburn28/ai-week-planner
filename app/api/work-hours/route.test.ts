@@ -50,4 +50,16 @@ describe("GET/POST /api/work-hours", () => {
     );
     expect(res.status).toBe(400);
   });
+
+  it("POST rejects an empty days object instead of silently saving nothing", async () => {
+    const { POST } = await import("./route");
+    const res = await POST(
+      new Request("http://localhost/api/work-hours", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ days: {} }),
+      }),
+    );
+    expect(res.status).toBe(400);
+  });
 });

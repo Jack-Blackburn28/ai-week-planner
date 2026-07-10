@@ -39,4 +39,12 @@ describe("parseWorkHoursMock", () => {
     expect(result.proposedRule).toBeUndefined();
     expect(result.reply).toBeTruthy();
   });
+
+  it("answers truthfully from currentRule instead of claiming none are set", () => {
+    const current = { days: { 0: { startMinutes: 540, endMinutes: 1020 } } };
+    const result = parseWorkHoursMock("what are my working hours", current);
+    expect(result.proposedRule).toBeUndefined();
+    expect(result.reply).toContain("Mon 9am-5pm");
+    expect(result.reply).not.toContain("couldn't quite parse");
+  });
 });

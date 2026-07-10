@@ -97,8 +97,13 @@ export function parseWorkHoursMock(
   const days = new Set<WeekDay>([...(dayRange ?? []), ...explicitDays, ...halfDays]);
 
   if (!range || days.size === 0) {
+    // Distinguish "I didn't understand a new instruction" from "what are my
+    // hours" — never claim the user has none set when currentRule shows they do.
+    const hasCurrent = currentRule && Object.keys(currentRule.days).length > 0;
     return {
-      reply: `Sorry, I couldn't quite parse that — could you say it like "9 to 5 Monday through Friday"? ${MOCK_NOTE}`,
+      reply: hasCurrent
+        ? `Your current hours are ${summarizeRule(currentRule!)}. To change them, try something like "9 to 5 Monday through Friday". ${MOCK_NOTE}`
+        : `Sorry, I couldn't quite parse that — could you say it like "9 to 5 Monday through Friday"? ${MOCK_NOTE}`,
     };
   }
 

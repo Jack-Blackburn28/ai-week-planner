@@ -9,7 +9,7 @@
  * no separate visual design system, just a functionally separate
  * conversation with its own confirm-before-save step.
  */
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { WorkHoursRule } from "@/lib/workHours/types";
 
 interface ChatMsg {
@@ -44,7 +44,7 @@ export function WorkHoursChat({ onSaved }: { onSaved?: () => void } = {}) {
   const [pendingRule, setPendingRule] = useState<WorkHoursRule | null>(null);
   const [thinking, setThinking] = useState(false);
   const [saved, setSaved] = useState(false);
-  const idRef = { current: 0 };
+  const idRef = useRef(0);
   const nextId = () => `wh${idRef.current++}`;
 
   const push = (role: ChatMsg["role"], text: string) =>
