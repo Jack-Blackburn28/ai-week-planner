@@ -545,7 +545,9 @@ export function DashboardShell() {
             <div className="h-px bg-hairline" />
             <GranolaConnect />
             <div className="h-px bg-hairline" />
-            <WorkHoursChat />
+            <WorkHoursChat
+              onSaved={() => void fetchWeek(weekOffset, { showLoading: true })}
+            />
           </div>
         </div>
       )}

@@ -81,6 +81,29 @@ describe("WorkHoursChat", () => {
     expect(saveCall.body).toEqual({ days: { "0": { startMinutes: 540, endMinutes: 1020 } } });
   });
 
+  it("calls onSaved after a successful save", async () => {
+    mockFetch({
+      getRule: { days: {} },
+      parseReply: {
+        reply: "Got it — Mon-Fri 9am-5pm. Save this?",
+        proposedRule: { days: { "0": { startMinutes: 540, endMinutes: 1020 } } },
+      },
+    });
+    const onSaved = vi.fn();
+    render(<WorkHoursChat onSaved={onSaved} />);
+    await userEvent.click(screen.getByRole("button", { name: "Change work hours" }));
+    await waitFor(() => screen.getByTestId("work-hours-chat"));
+
+    await userEvent.type(
+      screen.getByLabelText("Describe your working hours"),
+      "9 to 5 Monday through Friday{Enter}",
+    );
+    await waitFor(() => expect(screen.getByTestId("wh-confirm-actions")).toBeInTheDocument());
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
+  });
+
   it("Discard clears the pending proposal without persisting it", async () => {
     const postCalls = mockFetch({
       getRule: { days: {} },

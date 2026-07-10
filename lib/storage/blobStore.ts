@@ -44,6 +44,11 @@ export function kvConfigured(): boolean {
   return Boolean(redisUrl());
 }
 
+/** True when running as a deployed Vercel function (any environment). */
+function isVercelRuntime(): boolean {
+  return Boolean(process.env.VERCEL);
+}
+
 /** File backend: the current behavior — a single JSON file at `filePath`. */
 export function createFileBlobStore(
   filePath: string,
@@ -67,7 +72,12 @@ export function createFileBlobStore(
   };
 }
 
-/** KV backend: the same blob stored under `kvKey` in a hosted key-value store. */
+/**
+ * KV backend: the same blob stored under `kvKey` in a hosted key-value store.
+ * `write` reads the key back immediately after `set` and throws if it doesn't
+ * match — a network hiccup or misconfiguration must never look like a
+ * successful save to the caller.
+ */
 export function createKvBlobStore(kvKey: string, client: KvClient): BlobStore {
   return {
     async read() {
@@ -76,6 +86,12 @@ export function createKvBlobStore(kvKey: string, client: KvClient): BlobStore {
     },
     async write(value) {
       await client.set(kvKey, value);
+      const confirmed = await client.get(kvKey);
+      if (confirmed !== value) {
+        throw new Error(
+          `Write to KV key "${kvKey}" did not verify on read-back — refusing to report success.`,
+        );
+      }
     },
     async remove() {
       await client.del(kvKey);
@@ -131,20 +147,26 @@ export function getBlobStore(opts: {
   mode?: number;
 }): BlobStore {
   if (!kvConfigured()) {
+    if (isVercelRuntime()) {
+      throw new Error(
+        "REDIS_URL/KV_URL not configured — refusing to use non-durable local " +
+          "file storage on Vercel. Add a Redis/KV store in the Vercel dashboard " +
+          "and redeploy (env var changes don't apply to already-running deployments).",
+      );
+    }
     return createFileBlobStore(opts.filePath, { mode: opts.mode });
   }
   // Defer client construction to first use via a thin async-resolving wrapper.
-  return {
-    async read() {
-      return (await realKvClient()).get(opts.kvKey).then((v) =>
-        v == null ? null : String(v),
-      );
+  const lazyClient: KvClient = {
+    async get(key) {
+      return (await realKvClient()).get(key);
     },
-    async write(value) {
-      await (await realKvClient()).set(opts.kvKey, value);
+    async set(key, value) {
+      return (await realKvClient()).set(key, value);
     },
-    async remove() {
-      await (await realKvClient()).del(opts.kvKey);
+    async del(key) {
+      return (await realKvClient()).del(key);
     },
   };
+  return createKvBlobStore(opts.kvKey, lazyClient);
 }

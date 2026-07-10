@@ -68,6 +68,19 @@ describe("blobStore backend selection", () => {
     expect(await back.read()).toBe('{"hello":"file"}');
     rmSync(dir, { recursive: true, force: true });
   });
+
+  it("refuses the file backend on Vercel when KV is not configured", () => {
+    const saved = process.env.VERCEL;
+    process.env.VERCEL = "1";
+    try {
+      expect(() => getBlobStore({ filePath: "/tmp/unused.json", kvKey: "unused" })).toThrow(
+        /REDIS_URL\/KV_URL not configured/,
+      );
+    } finally {
+      if (saved === undefined) delete process.env.VERCEL;
+      else process.env.VERCEL = saved;
+    }
+  });
 });
 
 describe("file blob store round-trip", () => {
@@ -107,5 +120,24 @@ describe("kv blob store round-trip", () => {
     expect(await s.read()).toBe('{"a":1}');
     await s.remove();
     expect(await s.read()).toBeNull();
+  });
+});
+
+describe("kv blob store write verification", () => {
+  it("throws instead of reporting success when a write doesn't verify on read-back", async () => {
+    // A KV client whose set() silently no-ops, simulating a write that never lands.
+    const flakyKv: KvClient = {
+      async get() {
+        return null;
+      },
+      async set() {
+        /* pretend this succeeded without actually storing anything */
+      },
+      async del() {},
+    };
+    const store = createKvBlobStore("awp:test", flakyKv);
+    await expect(store.write("value-that-should-persist")).rejects.toThrow(
+      /did not verify on read-back/,
+    );
   });
 });

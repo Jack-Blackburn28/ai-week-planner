@@ -36,7 +36,7 @@ function summarizeRuleClient(rule: WorkHoursRule): string {
     .join(", ");
 }
 
-export function WorkHoursChat() {
+export function WorkHoursChat({ onSaved }: { onSaved?: () => void } = {}) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [draft, setDraft] = useState("");
@@ -113,6 +113,7 @@ export function WorkHoursChat() {
       setPendingRule(null);
       setSaved(true);
       push("assistant", "Saved ✓ Your working hours are updated.");
+      onSaved?.();
     } catch {
       push("assistant", "Sorry — I couldn't save that just now. Please try again.");
     }
