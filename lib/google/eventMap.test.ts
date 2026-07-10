@@ -12,13 +12,20 @@ const META: Record<string, CalendarMeta> = {
   "ai-cal": { source: "personal", immovable: false },
 };
 
-/** A timed event on `dateISO` from `startH:00` to `endH:00` (local). */
+/**
+ * A timed event on `dateISO` from `startH:00` to `endH:00`, Pacific Daylight
+ * Time (UTC-7 — every test date here is in July). Uses an explicit offset,
+ * exactly how Google's API returns a timed event's dateTime, so the result
+ * is a fixed instant independent of the test runner's own system timezone —
+ * a bare local-time string here previously made these tests pass only on a
+ * machine already set to Pacific time and fail on CI (which runs in UTC).
+ */
 function timed(id: string, calendarId: string, dateISO: string, startH: number, endH: number): RawEvent {
   return {
     id,
     summary: id,
-    start: { dateTime: new Date(`${dateISO}T${String(startH).padStart(2, "0")}:00:00`).toISOString() },
-    end: { dateTime: new Date(`${dateISO}T${String(endH).padStart(2, "0")}:00:00`).toISOString() },
+    start: { dateTime: `${dateISO}T${String(startH).padStart(2, "0")}:00:00-07:00` },
+    end: { dateTime: `${dateISO}T${String(endH).padStart(2, "0")}:00:00-07:00` },
     calendarId,
   };
 }
